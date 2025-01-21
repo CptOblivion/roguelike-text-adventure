@@ -8,12 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CptOblivion/RoguelikeTextAdventure.git"
+    "url": "git+https://github.com/CptOblivion/roguelike-text-adventure.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/CptOblivion/RoguelikeTextAdventure/issues"
+    "url": "https://github.com/CptOblivion/roguelike-text-adventure/issues"
   },
-  "homepage": "https://github.com/CptOblivion/RoguelikeTextAdventure#readme"
+  "homepage": "https://github.com/CptOblivion/roguelike-text-adventure#readme",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
 }
