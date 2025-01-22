@@ -35,15 +35,6 @@ export class Window {
     return this.height - this.padding.bottom - (this.borders.bottom ? 1 : 0) - 1;
   }
 
-  // TODO: settable mode to batch changes without redraw
-
-  setBorders(borders: Borders) {
-    // TODO: check if border presence changed (no need to resize interior if no change)
-    this.borders = borders;
-    this.fillBorder();
-    // TODO: recalculate children
-  }
-
   /**
    * Populates the border around the frame
    */
@@ -100,15 +91,18 @@ export class Window {
     return true;
   }
 
-  update(width: number, height: number) {
-    if (!this.resize(width, height)) return this.grid;
+  update(width: number, height: number, force = false): string[][] {
+    if (!force && !this.resize(width, height)) return this.grid;
+    this.fillBorder();
     console.log('not implemented yet');
 
     // negotiate size for children
     // pass final values to child in update
     for (const child of this.children) {
-      child.update(width, height);
+      // TODO: blit child grid into this.grid
+      child.update(width, height, force);
     }
+    return this.grid;
   }
 
   addChild(child) {

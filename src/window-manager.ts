@@ -13,7 +13,7 @@ export class WindowRoot extends Window {
 
   _onWindowResize() {
     this._updateCanvasSize();
-    this.draw();
+    this.update(this.width, this.height);
   }
 
   _updateCanvasSize() {
@@ -28,9 +28,10 @@ export class WindowRoot extends Window {
     this.resize(width, height);
   }
 
-  draw() {
-    this.update(this.width, this.height);
+  update(width: number, height: number, force = false): string[][] {
+    this.grid = Window.prototype.update.call(this, this.width, this.height, force);
     this.el.innerHTML = this.grid.map((row) => row.map(fixSpaces).join('')).join('\n');
+    return this.grid;
   }
 }
 
