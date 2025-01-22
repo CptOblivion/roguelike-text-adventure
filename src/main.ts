@@ -22,22 +22,23 @@ function main() {
 
 function buildWindow(el = document.body) {
   const windowManager = new WindowRoot(el);
-  windowManager.title = 'WINDOW MANAGER';
+  windowManager.title = 'ROOT WINDOW';
   windowManager.borders = BORDER_DOUBLE;
+  windowManager.titlePosition = 2;
+  windowManager.titleShift = 10;
 
   const mainScreen = new WindowBase('main_screen');
   mainScreen.title = 'MAIN SCREEN';
   mainScreen.titlePosition = 1;
   // mainScreen.borders = BORDER_SINGLE_DOUBLE;
-  mainScreen.borders = new Borders('', '', ' ', '', ' ', ' ', '', '');
+  mainScreen.borders = new Borders('', '', ' ', '', '╯', '╰', '╮', '╭');
   windowManager.addChild(mainScreen);
 
   const textField = new WindowBase('text_field');
   textField.title = 'TEXT FIELD';
-  textField.titlePosition = 2;
   // textField.borders = BORDER_DOUBLE_SINGLE;
   textField.borders = new Borders('', '', '─', '', '─', '─', '', '');
-  textField.sizeMin = 4;
+  textField.sizeMin = 3;
   textField.sizeWeight = 0;
   windowManager.addChild(textField);
   windowManager.changed = true;

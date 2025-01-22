@@ -22,12 +22,11 @@ export enum TitlePosition {
   right = 2,
 }
 
-const TITLE_OFFSET = 3;
-
 export class WindowBase {
   name: string;
   title?: string;
   titlePosition: TitlePosition = 0;
+  titleShift = 3;
 
   width: number = 0;
   height: number = 0;
@@ -103,14 +102,14 @@ export class WindowBase {
     let titleOffset;
     if (this.title) {
       switch (this.titlePosition) {
-        case 0:
-          titleOffset = -TITLE_OFFSET;
+        case TitlePosition.left:
+          titleOffset = -this.titleShift;
           break;
-        case 1:
+        case TitlePosition.center:
           titleOffset = Math.floor(-(this.width - this.title.length) / 2);
           break;
-        case 2:
-          titleOffset = -this.width + this.title.length + TITLE_OFFSET;
+        case TitlePosition.right:
+          titleOffset = -(this.width - this.title.length - this.titleShift);
           break;
       }
     }
