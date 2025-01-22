@@ -1,3 +1,4 @@
+// little  server for dev testing
 var express = require('express');
 var path = require('path');
 
@@ -5,10 +6,10 @@ var server = express();
 
 var PORT = 3000;
 
-server.use(express.static(path.join(__dirname, 'public')));
+server.use(express.static(path.join(__dirname, 'build')));
 
 server.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
+  res.sendFile(path.join(__dirname, 'build/index.html'));
 });
 
 server.listen(PORT, function () {
