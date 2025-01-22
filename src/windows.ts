@@ -21,7 +21,6 @@ export class Window {
   grid: string[][] = [];
   _lastWidth: number;
   _lastHeight: number;
-  changed: boolean = true;
 
   constructor(
     width: number,
@@ -50,22 +49,29 @@ export class Window {
     return this.height - this.padding.bottom - (this.borders.bottom ? 1 : 0) - 1;
   }
 
-  resize(width: number, height: number) {
+  /**
+   * Resizes the frame
+   *
+   * @returns true if the size changed
+   */
+  resize(width: number, height: number): boolean {
     if (this.width == width && this.height == height) {
-      return;
+      return false;
     }
-    this.changed = true;
     this.width = width;
     this.height = height;
     this.grid = new Array(height).fill([]);
     for (const i in this.grid) {
       this.grid[i] = new Array(width).fill(' ');
     }
-    this.fillFrame();
+    this.fillBorder();
+    return true;
   }
 
-  fillFrame() {
-    this.changed = true;
+  /**
+   * Populates the border around the frame
+   */
+  fillBorder() {
     if (!this.borders) {
       return;
     }
@@ -100,22 +106,14 @@ export class Window {
   }
 
   update(width: number, height: number) {
-    // if content hasn't changed, and all children haven't changed, return old value
-    this.resize(width, height);
-    if (!this.changed) {
-      return {
-        grid: this.grid,
-        changed: false,
-      };
-    }
-    console.log('not implemented');
+    if (!this.resize(width, height)) return this.grid;
+    console.log('not implemented yet');
 
     // negotiate size for children
     // pass final values to child in update
     for (const child of this.children) {
       child.update(width, height);
     }
-    this.changed = false;
   }
 
   addChild(child) {
