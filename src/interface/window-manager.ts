@@ -1,11 +1,10 @@
-import { Borders, Sides } from './borders';
-import { Window } from './windows';
+import { WindowBase, Grid } from './window';
 
-export class WindowRoot extends Window {
+export class WindowRoot extends WindowBase {
   el: HTMLElement;
 
   constructor(el: HTMLElement) {
-    super();
+    super('--~~== root ==~~--');
     this.el = el;
     window.addEventListener('resize', this._onWindowResize.bind(this));
     this._onWindowResize();
@@ -13,7 +12,6 @@ export class WindowRoot extends Window {
 
   _onWindowResize() {
     this._updateCanvasSize();
-    this.update(this.width, this.height);
   }
 
   _updateCanvasSize() {
@@ -26,10 +24,11 @@ export class WindowRoot extends Window {
     const width = this.el.innerHTML.length - 1;
     const height = Math.floor(window.innerHeight / (heightTwoChars - baseHeight));
     this.resize(width, height);
+    this.update();
   }
 
-  update(width: number, height: number, force = false): string[][] {
-    this.grid = Window.prototype.update.call(this, this.width, this.height, force);
+  update(): Grid {
+    this.grid = WindowBase.prototype.update.call(this);
     this.el.innerHTML = this.grid.map((row) => row.map(fixSpaces).join('')).join('\n');
     return this.grid;
   }
