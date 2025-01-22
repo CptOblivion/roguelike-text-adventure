@@ -1,9 +1,10 @@
-body {
+#main {
   font-family: monospace;
-  font-size: 20px;
+  font-size: 19px;
   margin: 0 auto;
   float: unset;
   height: 100%;
   width: 100%;
-  word-wrap: break-word;
+  word-break: break-all;
+  text-align: center;
 }

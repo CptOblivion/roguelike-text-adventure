@@ -1,6 +1,7 @@
 require('file-loader?name=[name].[ext]!./index.html');
 require('file-loader?name=[name].[ext]!./styles.css');
-import * as WindowManager from './window-manager';
+import { WindowRoot } from './window-manager';
+import { BORDER_DOUBLE, Sides } from './borders';
 
 function main() {
   console.log('initializing');
@@ -11,12 +12,7 @@ function main() {
 }
 
 function drawFrame(el = document.body) {
-  const windowManager = new WindowManager.WindowRoot(
-    el,
-    new WindowManager.Borders('|', '|', '-', '-', 'O'),
-    new WindowManager.Sides(2, 2, 1, 1),
-    new WindowManager.Sides(2, 2, 1, 1)
-  );
+  const windowManager = new WindowRoot(el, BORDER_DOUBLE, new Sides(0, 0, 0, 1));
 }
 
 main();
