@@ -12,7 +12,8 @@ function main() {
 }
 
 function drawFrame(el = document.body) {
-  const windowManager = new WindowRoot(el, BORDER_DOUBLE, new Sides(0, 0, 0, 1));
+  const windowManager = new WindowRoot(el);
+  windowManager.setBorders(BORDER_DOUBLE);
 }
 
 main();

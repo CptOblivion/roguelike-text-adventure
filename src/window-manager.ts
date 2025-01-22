@@ -4,13 +4,8 @@ import { Window } from './windows';
 export class WindowRoot extends Window {
   el: HTMLElement;
 
-  constructor(
-    el: HTMLElement,
-    border?: Borders,
-    margin: Sides = new Sides(),
-    padding: Sides = new Sides()
-  ) {
-    super(0, 0, border, margin, padding);
+  constructor(el: HTMLElement) {
+    super();
     this.el = el;
     window.addEventListener('resize', this._onWindowResize.bind(this));
     this._onWindowResize();

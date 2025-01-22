@@ -8,33 +8,19 @@ enum ChildrenDirections {
 export class Window {
   width: number = 0;
   height: number = 0;
-  margin: Sides;
-  padding: Sides;
+  margin: Sides = new Sides();
+  padding: Sides = new Sides();
   borders: Borders;
 
   sizeMin: number;
   sizeMax: number;
-  sizeWeight: number;
+  sizeWeight: number = 1;
 
-  children: Window[];
+  children: Window[] = [];
   childrenDirection: ChildrenDirections = 0;
   grid: string[][] = [];
   _lastWidth: number;
   _lastHeight: number;
-
-  constructor(
-    width: number,
-    height: number,
-    borders?: Borders,
-    margin: Sides = new Sides(),
-    padding: Sides = new Sides()
-  ) {
-    this.margin = margin;
-    this.padding = padding;
-    this.borders = borders;
-    this.resize(width, height);
-    this.children = [];
-  }
 
   get indexLeft(): number {
     return this.padding.left + (this.borders.left ? 1 : 0);
@@ -49,23 +35,13 @@ export class Window {
     return this.height - this.padding.bottom - (this.borders.bottom ? 1 : 0) - 1;
   }
 
-  /**
-   * Resizes the frame
-   *
-   * @returns true if the size changed
-   */
-  resize(width: number, height: number): boolean {
-    if (this.width == width && this.height == height) {
-      return false;
-    }
-    this.width = width;
-    this.height = height;
-    this.grid = new Array(height).fill([]);
-    for (const i in this.grid) {
-      this.grid[i] = new Array(width).fill(' ');
-    }
+  // TODO: settable mode to batch changes without redraw
+
+  setBorders(borders: Borders) {
+    // TODO: check if border presence changed (no need to resize interior if no change)
+    this.borders = borders;
     this.fillBorder();
-    return true;
+    // TODO: recalculate children
   }
 
   /**
@@ -105,6 +81,25 @@ export class Window {
         this.borders.bottomRight;
   }
 
+  /**
+   * Resizes the frame
+   *
+   * @returns true if the size changed
+   */
+  resize(width: number, height: number): boolean {
+    if (this.width == width && this.height == height) {
+      return false;
+    }
+    this.width = width;
+    this.height = height;
+    this.grid = new Array(height).fill([]);
+    for (const i in this.grid) {
+      this.grid[i] = new Array(width).fill(' ');
+    }
+    this.fillBorder();
+    return true;
+  }
+
   update(width: number, height: number) {
     if (!this.resize(width, height)) return this.grid;
     console.log('not implemented yet');
@@ -119,6 +114,4 @@ export class Window {
   addChild(child) {
     this.children.push(child);
   }
-
-  blit(target) {}
 }
