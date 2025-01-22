@@ -11,7 +11,6 @@ export enum ChildrenDirections {
 export type Grid = string[][];
 
 export type Position = [number, number];
-
 class SizeWithLock {
   size: number = 0;
   locked: boolean = false;
@@ -23,11 +22,12 @@ export enum TitlePosition {
   right = 2,
 }
 
+const TITLE_OFFSET = 3;
+
 export class WindowBase {
   name: string;
   title?: string;
   titlePosition: TitlePosition = 0;
-  titleOffset: number = 3;
 
   width: number = 0;
   height: number = 0;
@@ -100,7 +100,20 @@ export class WindowBase {
    * Populates the border around the frame
    */
   fillBorder() {
-    let titleOffset = this.titleOffset * -1;
+    let titleOffset;
+    if (this.title) {
+      switch (this.titlePosition) {
+        case 0:
+          titleOffset = -TITLE_OFFSET;
+          break;
+        case 1:
+          titleOffset = Math.floor(-(this.width - this.title.length) / 2);
+          break;
+        case 2:
+          titleOffset = -this.width + this.title.length + TITLE_OFFSET;
+          break;
+      }
+    }
     if (!this.borders) {
       return;
     }
@@ -117,10 +130,12 @@ export class WindowBase {
     if (this.borders.top || this.borders.bottom) {
       for (let i = this.margin.left + 1; i < this.width - this.margin.right - 1; i++) {
         titleOffset++;
-        if (this.title && titleOffset >= 0 && titleOffset < this.title.length) {
-          this.grid[this.margin.top][i] = this.title[titleOffset];
-        } else if (this.borders.top) {
-          this.grid[this.margin.top][i] = this.borders.top;
+        if (this.borders.top) {
+          if (this.title && titleOffset >= 0 && titleOffset < this.title.length) {
+            this.grid[this.margin.top][i] = this.title[titleOffset];
+          } else {
+            this.grid[this.margin.top][i] = this.borders.top;
+          }
         }
         if (this.borders.bottom) {
           this.grid[this.height - this.margin.bottom - 1][i] = this.borders.bottom;
