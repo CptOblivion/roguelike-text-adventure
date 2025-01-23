@@ -6,6 +6,7 @@ import { WindowRoot } from './interface/window-root';
 import { Borders, BORDER_DOUBLE, BORDER_INVISIBLE_TOP, PADDING_EVEN } from './interface/borders';
 import { TitlePosition, WindowBase } from './interface/window';
 import { FillDirection, WindowText } from './interface/window-text';
+import { WindowTextinput } from './interface/window-textinput';
 
 function main() {
   console.log('initializing');
@@ -47,11 +48,10 @@ function buildWindow(el = document.body) {
   statusPanel.sizeMin = 20;
   contentFrame.addChild(statusPanel);
 
-  const textField = new WindowBase('text_field');
+  const textField = new WindowTextinput();
   textField.title = 'TEXT FIELD';
   textField.borders = new Borders('', '', '─', '', '─', '─', '', '');
-  textField.sizeMin = 3;
-  textField.sizeWeight = 0;
+  textField.sizeMin = 4;
   windowRoot.addChild(textField);
 
   windowRoot.changed = true;

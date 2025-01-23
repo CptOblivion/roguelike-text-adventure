@@ -3,11 +3,14 @@ import { ASCIICanvas } from './ascii-canvas';
 
 export class WindowRoot extends WindowBase {
   private _el: HTMLElement;
-  static instance: WindowRoot;
+  private static _instance: WindowRoot;
 
   constructor(el: HTMLElement) {
+    if (WindowRoot._instance !== undefined) {
+      throw 'attempted to create a new window root when one already exists!';
+    }
     super('root');
-    WindowRoot.instance = this;
+    WindowRoot._instance = this;
     this._el = el;
     window.addEventListener('resize', this._onWindowResize.bind(this));
     this._onWindowResize();
@@ -36,11 +39,11 @@ export class WindowRoot extends WindowBase {
   protected override _update(): ASCIICanvas {
     super._update();
     // WindowBase.prototype._update.call(this);
-    this._el.innerHTML = this.canvas.render();
-    return this.canvas;
+    this._el.innerHTML = this._canvas.render();
+    return this._canvas;
   }
 
   static redraw() {
-    WindowRoot.instance._update();
+    WindowRoot._instance._update();
   }
 }

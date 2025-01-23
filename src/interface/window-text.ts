@@ -1,6 +1,5 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
-import { WindowRoot } from './window-root';
 
 export enum FillDirection {
   topDown = 0,
@@ -25,7 +24,7 @@ export class WindowText extends WindowBase {
     this._text = text;
     this.textHeight = (text.match(/\n/g) || []).length;
     this.changed = true;
-    WindowRoot.redraw();
+    this.requestRedraw();
   }
 
   /**
@@ -81,13 +80,13 @@ export class WindowText extends WindowBase {
   }
 
   protected override _update(): ASCIICanvas {
-    this.canvas.clear();
+    this._canvas.clear();
     super._update();
     if (this.fillDirection === FillDirection.topDown) {
-      this.canvas.writeString(this._text, [this.indexLeft, this.indexTop]);
+      this._canvas.writeString(this._text, [this.indexLeft, this.indexTop]);
     } else {
-      this.canvas.writeString(this._text, [this.indexLeft, this.indexBottom - this.textHeight]);
+      this._canvas.writeString(this._text, [this.indexLeft, this.indexBottom - this.textHeight]);
     }
-    return this.canvas;
+    return this._canvas;
   }
 }

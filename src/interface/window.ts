@@ -1,5 +1,6 @@
 import { Borders, Sides } from './borders';
 import { ASCIICanvas } from './ascii-canvas';
+import { WindowRoot } from './window-root';
 
 // abusing truthiness in JS to map horizontal to false
 export enum ChildrenDirections {
@@ -36,7 +37,7 @@ export class WindowBase {
   protected _children: WindowBase[] = [];
   contentDirection: ChildrenDirections = ChildrenDirections.vertical;
 
-  canvas: ASCIICanvas = new ASCIICanvas();
+  protected _canvas: ASCIICanvas = new ASCIICanvas();
   changed: boolean = true;
 
   constructor(name: string) {
@@ -113,7 +114,7 @@ export class WindowBase {
     if (this.width == width && this.height == height) return;
     this.width = width;
     this.height = height;
-    this.canvas.resize(this.width, this.height);
+    this._canvas.resize(this.width, this.height);
     this.changed = true;
   }
 
@@ -137,41 +138,46 @@ export class WindowBase {
     }
     if (this.borders.left) {
       for (let i = 1; i < this.height - 1; i++) {
-        this.canvas.setAt(this.borders.left, [0, i]);
+        this._canvas.setAt(this.borders.left, [0, i]);
       }
     }
     if (this.borders.right) {
       for (let i = 1; i < this.height - 1; i++) {
-        this.canvas.setAt(this.borders.right, [this.width - 1, i]);
+        this._canvas.setAt(this.borders.right, [this.width - 1, i]);
       }
     }
     if (this.borders.top) {
       for (let i = 1; i < this.width - 1; i++) {
         titleOffset++;
         if (this.title && titleOffset >= 0 && titleOffset < this.title.length) {
-          this.canvas.setAt(this.title[titleOffset], [i, 0]);
+          this._canvas.setAt(this.title[titleOffset], [i, 0]);
         } else {
-          this.canvas.setAt(this.borders.top, [i, 0]);
+          this._canvas.setAt(this.borders.top, [i, 0]);
         }
       }
     }
     if (this.borders.bottom) {
       for (let i = 1; i < this.width - 1; i++) {
-        this.canvas.setAt(this.borders.bottom, [i, this.height - 1]);
+        this._canvas.setAt(this.borders.bottom, [i, this.height - 1]);
       }
     }
-    if (this.borders.topLeft) this.canvas.setAt(this.borders.topLeft, [0, 0]);
-    if (this.borders.topRight) this.canvas.setAt(this.borders.topRight, [this.width - 1, 0]);
-    if (this.borders.bottomLeft) this.canvas.setAt(this.borders.bottomLeft, [0, this.height - 1]);
+    if (this.borders.topLeft) this._canvas.setAt(this.borders.topLeft, [0, 0]);
+    if (this.borders.topRight) this._canvas.setAt(this.borders.topRight, [this.width - 1, 0]);
+    if (this.borders.bottomLeft) this._canvas.setAt(this.borders.bottomLeft, [0, this.height - 1]);
     if (this.borders.bottomRight)
-      this.canvas.setAt(this.borders.bottomRight, [this.width - 1, this.height - 1]);
+      this._canvas.setAt(this.borders.bottomRight, [this.width - 1, this.height - 1]);
+  }
+
+  requestRedraw() {
+    this.changed = true;
+    WindowRoot.redraw();
   }
 
   protected _update(): ASCIICanvas {
-    if (!this.changed) return this.canvas;
+    if (!this.changed) return this._canvas;
     this._fillBorder();
     if (this._children.length === 0) {
-      return this.canvas;
+      return this._canvas;
     }
 
     const sizes = this._negotiateChildrenSize();
@@ -181,7 +187,7 @@ export class WindowBase {
       for (const i in this._children) {
         this._children[i].resize(this.interiorWidth, sizes[i].size);
         const childGrid = this._children[i]._update();
-        this.canvas.blit(childGrid, [this.indexLeft, contentPos]);
+        this._canvas.blit(childGrid, [this.indexLeft, contentPos]);
         contentPos += childGrid.height;
       }
     } else {
@@ -189,11 +195,11 @@ export class WindowBase {
       for (const i in this._children) {
         this._children[i].resize(sizes[i].size, this.interiorHeight);
         const childGrid = this._children[i]._update();
-        this.canvas.blit(childGrid, [contentPos, this.indexTop]);
+        this._canvas.blit(childGrid, [contentPos, this.indexTop]);
         contentPos += childGrid.width;
       }
     }
-    return this.canvas;
+    return this._canvas;
   }
 
   private _negotiateChildrenSize(): SizeWithLock[] {
