@@ -5,13 +5,17 @@ export class ASCIICanvas {
   width: number = 0;
   height: number = 0;
 
-  resize(width: number, height: number) {
-    this._grid = new Array(height).fill(undefined);
+  clear() {
+    this._grid = new Array(this.height).fill(undefined);
     for (const i in this._grid) {
-      this._grid[i] = new Array(width).fill(' ');
+      this._grid[i] = new Array(this.width).fill(' ');
     }
+  }
+
+  resize(width: number, height: number) {
     this.width = width;
     this.height = height;
+    this.clear();
   }
 
   checkBounds([x, y]: Position): boolean {
@@ -50,6 +54,16 @@ export class ASCIICanvas {
       for (let srcY = 0, y = position[1]; srcY < srcGrid.height && y < this.height; srcY++, y++) {
         if (y < 0) continue;
         this.setAt(srcGrid.getAt(srcX, srcY), [x, y]);
+      }
+    }
+  }
+
+  writeString(src: string, [x, y]: Position) {
+    const textRows = src.split('\n');
+    for (let offsY = 0; offsY < textRows.length; offsY++) {
+      // TODO: process markdown (colors, links, etc)
+      for (let offsX = 0; offsX < textRows[offsY].length; offsX++) {
+        this.setAt(textRows[offsY][offsX], [x + offsX, y + offsY]);
       }
     }
   }

@@ -5,7 +5,7 @@ export class WindowRoot extends WindowBase {
   el: HTMLElement;
 
   constructor(el: HTMLElement) {
-    super('--~~== root ==~~--');
+    super('root');
     this.el = el;
     window.addEventListener('resize', this._onWindowResize.bind(this));
     this._onWindowResize();

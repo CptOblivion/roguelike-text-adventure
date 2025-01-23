@@ -2,9 +2,10 @@
 require('file-loader?name=[name].[ext]!./index.html');
 require('file-loader?name=[name].[ext]!./styles.css');
 
-import { WindowRoot } from './interface/window-manager';
+import { WindowRoot } from './interface/window-root';
 import { Borders, BORDER_DOUBLE, BORDER_INVISIBLE_TOP, BORDER_SINGLE } from './interface/borders';
 import { TitlePosition, WindowBase } from './interface/window';
+import { FillDirection, WindowText } from './interface/window-text';
 
 function main() {
   console.log('initializing');
@@ -27,11 +28,15 @@ function buildWindow(el = document.body) {
   contentFrame.contentDirection = 0;
   windowManager.addChild(contentFrame);
 
-  const mainScreen = new WindowBase('main_screen');
-  mainScreen.title = 'MAIN SCREEN';
-  mainScreen.titlePosition = 1;
-  mainScreen.borders = BORDER_INVISIBLE_TOP;
-  contentFrame.addChild(mainScreen);
+  const textLog = new WindowText('text_log');
+  textLog.title = 'TEXT LOG';
+  textLog.titlePosition = 1;
+  textLog.borders = BORDER_INVISIBLE_TOP;
+  textLog.setText(
+    'you are standing in a place\nthere is some stuff\nexits are some directions or whatever\n\nwhat do you do I guess'
+  );
+  textLog.fillDirection = FillDirection.bottomUp;
+  contentFrame.addChild(textLog);
 
   const statusPanel = new WindowBase('status_panel');
   statusPanel.title = 'STATUS PANEL';
