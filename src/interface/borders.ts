@@ -29,7 +29,7 @@ export class Borders {
 }
 
 // a handful of handy presets
-export const BORDER_INVISIBLE_TOP = new Borders('', '', ' ', '', '', '', '', '');
+export const BORDER_INVISIBLE_TOP = new Borders('', '', ' ', '', '', '', '', ''); // handy for rendering title with no border
 export const BORDER_SINGLE = new Borders('│', '│', '─', '─', '┌', '┐', '└', '┘');
 export const BORDER_DOUBLE = new Borders('║', '║', '═', '═', '╔', '╗', '╚', '╝');
 export const BORDER_DOUBLE_SINGLE = new Borders('║', '║', '─', '─', '╓', '╖', '╙', '╜');
@@ -48,3 +48,7 @@ export class Sides {
     this.bottom = bottom;
   }
 }
+
+export const PADDING_SIDES = new Sides(1, 1, 0, 0); // handy for evening out space when borders present
+export const PADDING_1 = new Sides(1, 1, 1, 1); // probably not gonna be used
+export const PADDING_EVEN = new Sides(2, 2, 1, 1); // roughly even space around all sides
