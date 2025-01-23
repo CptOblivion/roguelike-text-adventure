@@ -33,12 +33,10 @@ export class WindowBase {
   sizeMax?: number;
   sizeWeight: number = 1;
 
-  children: WindowBase[] = [];
+  protected _children: WindowBase[] = [];
   contentDirection: ChildrenDirections = ChildrenDirections.vertical;
 
   canvas: ASCIICanvas = new ASCIICanvas();
-  _lastWidth: number;
-  _lastHeight: number;
   changed: boolean = true;
 
   constructor(name: string) {
@@ -102,7 +100,7 @@ export class WindowBase {
   }
 
   addChild(child: WindowBase) {
-    this.children.push(child);
+    this._children.push(child);
   }
 
   /**
@@ -119,10 +117,7 @@ export class WindowBase {
     this.changed = true;
   }
 
-  /**
-   * Populates border and title around frame
-   */
-  fillBorder() {
+  private _fillBorder() {
     if (!this.borders) {
       return;
     }
@@ -172,28 +167,28 @@ export class WindowBase {
       this.canvas.setAt(this.borders.bottomRight, [this.width - 1, this.height - 1]);
   }
 
-  update(): ASCIICanvas {
+  protected _update(): ASCIICanvas {
     if (!this.changed) return this.canvas;
-    this.fillBorder();
-    if (this.children.length === 0) {
+    this._fillBorder();
+    if (this._children.length === 0) {
       return this.canvas;
     }
 
-    const sizes = this.negotiateChildrenSize();
+    const sizes = this._negotiateChildrenSize();
     let contentPos = this.contentStart;
     if (this.contentDirection) {
       // vertical
-      for (const i in this.children) {
-        this.children[i].resize(this.interiorWidth, sizes[i].size);
-        const childGrid = this.children[i].update();
+      for (const i in this._children) {
+        this._children[i].resize(this.interiorWidth, sizes[i].size);
+        const childGrid = this._children[i]._update();
         this.canvas.blit(childGrid, [this.indexLeft, contentPos]);
         contentPos += childGrid.height;
       }
     } else {
       // horizontal
-      for (const i in this.children) {
-        this.children[i].resize(sizes[i].size, this.interiorHeight);
-        const childGrid = this.children[i].update();
+      for (const i in this._children) {
+        this._children[i].resize(sizes[i].size, this.interiorHeight);
+        const childGrid = this._children[i]._update();
         this.canvas.blit(childGrid, [contentPos, this.indexTop]);
         contentPos += childGrid.width;
       }
@@ -201,10 +196,11 @@ export class WindowBase {
     return this.canvas;
   }
 
-  negotiateChildrenSize(): SizeWithLock[] {
+  private _negotiateChildrenSize(): SizeWithLock[] {
     // TODO: come up with some test cases to verify this actually behaves right (sizes come out correct with various weights and limits, edge cases like fractional results, overflows, and leftover space)
     // TODO: dole out remainder
-    const sizes = new Array(this.children.length);
+    // TODO: if this.contentSize and child weight and min/max haven't changed, skip resize
+    const sizes = new Array(this._children.length);
     for (let i = 0; i < sizes.length; i++) {
       sizes[i] = {};
     }
@@ -222,7 +218,7 @@ export class WindowBase {
           continue;
         }
         childrenRemaining += 1;
-        weightSum += this.children[j].sizeWeight;
+        weightSum += this._children[j].sizeWeight;
       }
 
       if (childrenRemaining == 0) {
@@ -239,7 +235,7 @@ export class WindowBase {
       let renegotiate = false;
       for (const j in sizes) {
         if (sizes[j].locked) continue;
-        const child = this.children[j];
+        const child = this._children[j];
         sizes[j].size = (child.sizeWeight / weightSum) * remainingSize;
         if (child.sizeMax !== undefined && sizes[j].size >= child.sizeMax) {
           sizes[j].size = child.sizeMax;

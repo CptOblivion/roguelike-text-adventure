@@ -1,21 +1,25 @@
 import { Position } from '../common';
 
 export class ASCIICanvas {
-  _grid: string[][] = new Array();
   width: number = 0;
   height: number = 0;
+  private _canvas: string[][] = new Array();
+
+  clear() {
+    this._canvas = new Array(this.height).fill(undefined);
+    for (const i in this._canvas) {
+      this._canvas[i] = new Array(this.width).fill(' ');
+    }
+  }
 
   resize(width: number, height: number) {
-    this._grid = new Array(height).fill(undefined);
-    for (const i in this._grid) {
-      this._grid[i] = new Array(width).fill(' ');
-    }
     this.width = width;
     this.height = height;
+    this.clear();
   }
 
   checkBounds([x, y]: Position): boolean {
-    if (this._grid === undefined) return false;
+    if (this._canvas === undefined) return false;
     if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
       return false;
     }
@@ -24,12 +28,12 @@ export class ASCIICanvas {
 
   getAt(x: number, y: number): string {
     if (!this.checkBounds([x, y])) return undefined;
-    return this._grid[y][x];
+    return this._canvas[y][x];
   }
 
   setAt(value: string, position: Position) {
     if (!this.checkBounds(position)) return;
-    this._grid[position[1]][position[0]] = value;
+    this._canvas[position[1]][position[0]] = value;
   }
 
   clamp([x, y]: Position): Position {
@@ -54,8 +58,18 @@ export class ASCIICanvas {
     }
   }
 
+  writeString(src: string, [x, y]: Position) {
+    const textRows = src.split('\n');
+    for (let offsY = 0; offsY < textRows.length; offsY++) {
+      // TODO: process markdown (colors, links, etc)
+      for (let offsX = 0; offsX < textRows[offsY].length; offsX++) {
+        this.setAt(textRows[offsY][offsX], [x + offsX, y + offsY]);
+      }
+    }
+  }
+
   render(): string {
-    return this._grid.map((row) => row.map(fixSpaces).join('')).join('\n');
+    return this._canvas.map((row) => row.map(fixSpaces).join('')).join('\n');
   }
 }
 

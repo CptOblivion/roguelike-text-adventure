@@ -2,9 +2,10 @@
 require('file-loader?name=[name].[ext]!./index.html');
 require('file-loader?name=[name].[ext]!./styles.css');
 
-import { WindowRoot } from './interface/window-manager';
-import { Borders, BORDER_DOUBLE, BORDER_INVISIBLE_TOP, BORDER_SINGLE } from './interface/borders';
+import { WindowRoot } from './interface/window-root';
+import { Borders, BORDER_DOUBLE, BORDER_INVISIBLE_TOP, PADDING_EVEN } from './interface/borders';
 import { TitlePosition, WindowBase } from './interface/window';
+import { FillDirection, WindowText } from './interface/window-text';
 
 function main() {
   console.log('initializing');
@@ -16,22 +17,27 @@ function main() {
 }
 
 function buildWindow(el = document.body) {
-  const windowManager = new WindowRoot(el);
-  windowManager.title = 'ROOT WINDOW';
-  windowManager.borders = BORDER_DOUBLE;
-  windowManager.titlePosition = 2;
-  windowManager.titleShift = 23;
+  const windowRoot = new WindowRoot(el);
+  windowRoot.title = 'ROOT WINDOW';
+  windowRoot.borders = BORDER_DOUBLE;
+  windowRoot.titlePosition = 2;
+  windowRoot.titleShift = 23;
 
   const contentFrame = new WindowBase('content_frame');
   contentFrame.title = 'CONTENT FRAME';
   contentFrame.contentDirection = 0;
-  windowManager.addChild(contentFrame);
+  windowRoot.addChild(contentFrame);
 
-  const mainScreen = new WindowBase('main_screen');
-  mainScreen.title = 'MAIN SCREEN';
-  mainScreen.titlePosition = 1;
-  mainScreen.borders = BORDER_INVISIBLE_TOP;
-  contentFrame.addChild(mainScreen);
+  const textLog = new WindowText('text_log');
+  textLog.title = 'TEXT LOG';
+  textLog.titlePosition = 1;
+  textLog.borders = BORDER_INVISIBLE_TOP;
+  textLog.padding = PADDING_EVEN;
+  textLog.addText(
+    'you are standing in a place\nthere is some stuff\nexits are some directions or whatever\n\nwhat do you do I guess'
+  );
+  textLog.fillDirection = FillDirection.bottomUp;
+  contentFrame.addChild(textLog);
 
   const statusPanel = new WindowBase('status_panel');
   statusPanel.title = 'STATUS PANEL';
@@ -46,10 +52,10 @@ function buildWindow(el = document.body) {
   textField.borders = new Borders('', '', '─', '', '─', '─', '', '');
   textField.sizeMin = 3;
   textField.sizeWeight = 0;
-  windowManager.addChild(textField);
+  windowRoot.addChild(textField);
 
-  windowManager.changed = true;
-  windowManager.update();
+  windowRoot.changed = true;
+  WindowRoot.redraw();
 }
 
 main();
