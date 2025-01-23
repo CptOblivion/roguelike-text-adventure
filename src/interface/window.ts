@@ -1,4 +1,5 @@
 import { Borders, Sides } from './borders';
+import { ASCIICanvas } from './ascii-canvas';
 
 // abusing truthiness in JS to map horizontal to false
 export enum ChildrenDirections {
@@ -6,12 +7,6 @@ export enum ChildrenDirections {
   vertical = 1,
 }
 
-// TODO: turn into class with width and height methods, simple constructor, coordinate access for getting and setting, protections against out of bounds access
-// TODO: move blit into grid class? (maybe keep it in WindowBase, so we can keep the protected margin/border/padding region)
-//    alternately, move to blit, just remember to scale and offset contents before blitting
-export type Grid = string[][];
-
-export type Position = [number, number];
 class SizeWithLock {
   size: number = 0;
   locked: boolean = false;
@@ -31,7 +26,6 @@ export class WindowBase {
 
   width: number = 0;
   height: number = 0;
-  margin: Sides = new Sides();
   padding: Sides = new Sides();
   borders: Borders;
 
@@ -42,7 +36,7 @@ export class WindowBase {
   children: WindowBase[] = [];
   contentDirection: ChildrenDirections = ChildrenDirections.vertical;
 
-  grid: Grid = [];
+  canvas: ASCIICanvas = new ASCIICanvas();
   _lastWidth: number;
   _lastHeight: number;
   changed: boolean = true;
@@ -113,22 +107,15 @@ export class WindowBase {
 
   /**
    * Resizes the frame
-   *
    * @returns true if the size changed
    */
   resize(width: number, height: number): boolean {
-    // TODO: dole out remainder in size negotiation
     width = Math.floor(width);
     height = Math.floor(height);
     if (this.width == width && this.height == height) return;
     this.width = width;
     this.height = height;
-    // console.log(`${this.name} resized to ${this.width} x ${this.height}`);
-    this.grid = new Array(height).fill([]);
-    for (const i in this.grid) {
-      this.grid[i] = new Array(width).fill(' ');
-    }
-    // this.fillBorder();
+    this.canvas.resize(this.width, this.height);
     this.changed = true;
   }
 
@@ -136,6 +123,9 @@ export class WindowBase {
    * Populates border and title around frame
    */
   fillBorder() {
+    if (!this.borders) {
+      return;
+    }
     let titleOffset;
     if (this.title) {
       switch (this.titlePosition) {
@@ -150,97 +140,65 @@ export class WindowBase {
           break;
       }
     }
-    if (!this.borders) {
-      return;
-    }
-    if (this.borders.left || this.borders.right) {
-      for (let i = this.margin.top + 1; i < this.height - this.margin.bottom - 1; i++) {
-        if (this.borders.left) {
-          this.grid[i][this.margin.left] = this.borders.left;
-        }
-        if (this.borders.right) {
-          this.grid[i][this.width - this.margin.right - 1] = this.borders.right;
-        }
+    if (this.borders.left) {
+      for (let i = 1; i < this.height - 1; i++) {
+        this.canvas.setAt(this.borders.left, [0, i]);
       }
     }
-    if (this.borders.top || this.borders.bottom) {
-      for (let i = this.margin.left + 1; i < this.width - this.margin.right - 1; i++) {
+    if (this.borders.right) {
+      for (let i = 1; i < this.height - 1; i++) {
+        this.canvas.setAt(this.borders.right, [this.width - 1, i]);
+      }
+    }
+    if (this.borders.top) {
+      for (let i = 1; i < this.width - 1; i++) {
         titleOffset++;
-        if (this.borders.top) {
-          if (this.title && titleOffset >= 0 && titleOffset < this.title.length) {
-            this.grid[this.margin.top][i] = this.title[titleOffset];
-          } else {
-            this.grid[this.margin.top][i] = this.borders.top;
-          }
-        }
-        if (this.borders.bottom) {
-          this.grid[this.height - this.margin.bottom - 1][i] = this.borders.bottom;
+        if (this.title && titleOffset >= 0 && titleOffset < this.title.length) {
+          this.canvas.setAt(this.title[titleOffset], [i, 0]);
+        } else {
+          this.canvas.setAt(this.borders.top, [i, 0]);
         }
       }
     }
-    if (this.borders.topLeft) this.grid[this.margin.top][this.margin.left] = this.borders.topLeft;
-    if (this.borders.topRight)
-      this.grid[this.margin.top][this.width - this.margin.right - 1] = this.borders.topRight;
-    if (this.borders.bottomLeft)
-      this.grid[this.height - this.margin.bottom - 1][this.margin.left] = this.borders.bottomLeft;
+    if (this.borders.bottom) {
+      for (let i = 1; i < this.width - 1; i++) {
+        this.canvas.setAt(this.borders.bottom, [i, this.height - 1]);
+      }
+    }
+    if (this.borders.topLeft) this.canvas.setAt(this.borders.topLeft, [0, 0]);
+    if (this.borders.topRight) this.canvas.setAt(this.borders.topRight, [this.width - 1, 0]);
+    if (this.borders.bottomLeft) this.canvas.setAt(this.borders.bottomLeft, [0, this.height - 1]);
     if (this.borders.bottomRight)
-      this.grid[this.height - this.margin.bottom - 1][this.width - this.margin.right - 1] =
-        this.borders.bottomRight;
+      this.canvas.setAt(this.borders.bottomRight, [this.width - 1, this.height - 1]);
   }
 
-  update(): Grid {
-    if (!this.changed) return this.grid;
+  update(): ASCIICanvas {
+    if (!this.changed) return this.canvas;
     this.fillBorder();
     if (this.children.length === 0) {
-      return this.grid;
+      return this.canvas;
     }
 
     const sizes = this.negotiateChildrenSize();
     let contentPos = this.contentStart;
     if (this.contentDirection) {
+      // vertical
       for (const i in this.children) {
         this.children[i].resize(this.interiorWidth, sizes[i].size);
         const childGrid = this.children[i].update();
-        [, contentPos] = this.blit(childGrid, [this.indexLeft, contentPos]);
+        this.canvas.blit(childGrid, [this.indexLeft, contentPos]);
+        contentPos += childGrid.height;
       }
     } else {
+      // horizontal
       for (const i in this.children) {
         this.children[i].resize(sizes[i].size, this.interiorHeight);
         const childGrid = this.children[i].update();
-        [contentPos] = this.blit(childGrid, [contentPos, this.indexTop]);
+        this.canvas.blit(childGrid, [contentPos, this.indexTop]);
+        contentPos += childGrid.width;
       }
     }
-    return this.grid;
-  }
-  /**
-   *
-   * @param srcGrid source to blit into this grid
-   * @param position coordinate of top left corner of grid
-   * @returns x,y coordinates of finished blit (clipped to target grid)
-   */
-  blit(srcGrid: Grid, [x, y]: Position): Position {
-    if (srcGrid.length === 0 || srcGrid[0].length === 0) {
-      return [
-        Math.max(Math.min(x, this.indexRight), this.indexLeft),
-        Math.max(Math.min(y, this.indexBottom), this.indexTop),
-      ];
-    }
-    for (let childY = 0, i = y; childY < srcGrid.length && i <= this.indexBottom; childY++, i++) {
-      if (i < this.indexTop) continue;
-      for (
-        let childX = 0, j = x;
-        childX < srcGrid[0].length && j <= this.indexRight;
-        childX++, j++
-      ) {
-        if (j < this.indexLeft) continue;
-        this.grid[i][j] = srcGrid[childY][childX];
-      }
-    }
-
-    return [
-      Math.max(Math.min(x + srcGrid[0].length, this.indexRight), this.indexLeft),
-      Math.max(Math.min(y + srcGrid.length, this.indexBottom), this.indexTop),
-    ];
+    return this.canvas;
   }
 
   negotiateChildrenSize(): SizeWithLock[] {

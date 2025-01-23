@@ -1,4 +1,5 @@
-import { WindowBase, Grid } from './window';
+import { WindowBase } from './window';
+import { ASCIICanvas } from './ascii-canvas';
 
 export class WindowRoot extends WindowBase {
   el: HTMLElement;
@@ -30,14 +31,9 @@ export class WindowRoot extends WindowBase {
     this.update();
   }
 
-  update(): Grid {
-    this.grid = WindowBase.prototype.update.call(this);
-    this.el.innerHTML = this.grid.map((row) => row.map(fixSpaces).join('')).join('\n');
-    return this.grid;
+  update(): ASCIICanvas {
+    WindowBase.prototype.update.call(this);
+    this.el.innerHTML = this.canvas.render();
+    return this.canvas;
   }
-}
-
-function fixSpaces(char): string {
-  if (char === ' ') return '&nbsp';
-  return char;
 }
