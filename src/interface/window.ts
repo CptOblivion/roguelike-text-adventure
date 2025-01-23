@@ -142,34 +142,34 @@ export class WindowBase {
     }
     if (this.borders.left) {
       for (let i = 1; i < this.height - 1; i++) {
-        this.canvas.setAt(this.borders.left, 0, i);
+        this.canvas.setAt(this.borders.left, [0, i]);
       }
     }
     if (this.borders.right) {
       for (let i = 1; i < this.height - 1; i++) {
-        this.canvas.setAt(this.borders.right, this.width - 1, i);
+        this.canvas.setAt(this.borders.right, [this.width - 1, i]);
       }
     }
     if (this.borders.top) {
       for (let i = 1; i < this.width - 1; i++) {
         titleOffset++;
         if (this.title && titleOffset >= 0 && titleOffset < this.title.length) {
-          this.canvas.setAt(this.title[titleOffset], i, 0);
+          this.canvas.setAt(this.title[titleOffset], [i, 0]);
         } else {
-          this.canvas.setAt(this.borders.top, i, 0);
+          this.canvas.setAt(this.borders.top, [i, 0]);
         }
       }
     }
     if (this.borders.bottom) {
       for (let i = 1; i < this.width - 1; i++) {
-        this.canvas.setAt(this.borders.bottom, i, this.height - 1);
+        this.canvas.setAt(this.borders.bottom, [i, this.height - 1]);
       }
     }
-    if (this.borders.topLeft) this.canvas.setAt(this.borders.topLeft, 0, 0);
-    if (this.borders.topRight) this.canvas.setAt(this.borders.topRight, this.width - 1, 0);
-    if (this.borders.bottomLeft) this.canvas.setAt(this.borders.bottomLeft, 0, this.height - 1);
+    if (this.borders.topLeft) this.canvas.setAt(this.borders.topLeft, [0, 0]);
+    if (this.borders.topRight) this.canvas.setAt(this.borders.topRight, [this.width - 1, 0]);
+    if (this.borders.bottomLeft) this.canvas.setAt(this.borders.bottomLeft, [0, this.height - 1]);
     if (this.borders.bottomRight)
-      this.canvas.setAt(this.borders.bottomRight, this.width - 1, this.height - 1);
+      this.canvas.setAt(this.borders.bottomRight, [this.width - 1, this.height - 1]);
   }
 
   update(): ASCIICanvas {

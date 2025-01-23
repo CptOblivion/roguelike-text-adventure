@@ -27,9 +27,9 @@ export class ASCIICanvas {
     return this._grid[y][x];
   }
 
-  setAt(value: string, x: number, y: number) {
-    if (!this.checkBounds([x, y])) return;
-    this._grid[y][x] = value;
+  setAt(value: string, position: Position) {
+    if (!this.checkBounds(position)) return;
+    this._grid[position[1]][position[0]] = value;
   }
 
   clamp([x, y]: Position): Position {
@@ -40,16 +40,16 @@ export class ASCIICanvas {
    * @param srcGrid source to blit into this canvas
    * @param position top left corner offset
    */
-  blit(srcGrid: ASCIICanvas, [x, y]: Position) {
+  blit(srcGrid: ASCIICanvas, position: Position) {
     if (srcGrid.width === 0 || srcGrid.height === 0) {
       return;
     }
 
-    for (let srcY = 0, i = y; srcY < srcGrid.height && i < this.height; srcY++, i++) {
-      if (i < 0) continue;
-      for (let srcX = 0, j = x; srcX < srcGrid.width && j <= this.width; srcX++, j++) {
-        if (j < 0) continue;
-        this.setAt(srcGrid.getAt(srcX, srcY), i, j);
+    for (let srcX = 0, x = position[0]; srcX < srcGrid.width && x <= this.width; srcX++, x++) {
+      if (x < 0) continue;
+      for (let srcY = 0, y = position[1]; srcY < srcGrid.height && y < this.height; srcY++, y++) {
+        if (y < 0) continue;
+        this.setAt(srcGrid.getAt(srcX, srcY), [x, y]);
       }
     }
   }
