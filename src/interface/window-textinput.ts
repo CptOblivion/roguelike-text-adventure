@@ -48,7 +48,7 @@ export class WindowTextinput extends WindowBase {
 
   protected override _update(): ASCIICanvas {
     this._canvas.clear();
-    this._canvas.writeString(this._text, [this.indexLeft, this.indexTop]);
+    this._canvas.writeString(this._text + '█', [this.indexLeft, this.indexTop]);
     super._update();
     return this._canvas;
   }

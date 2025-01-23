@@ -19,20 +19,15 @@ function main() {
 
 function buildWindow(el = document.body) {
   const windowRoot = new WindowRoot(el);
-  windowRoot.title = 'ROOT WINDOW';
+  windowRoot.title = 'DEFINITELY A REAL GAME';
   windowRoot.borders = BORDER_DOUBLE;
-  windowRoot.titlePosition = 2;
-  windowRoot.titleShift = 23;
+  windowRoot.titlePosition = 1;
 
   const contentFrame = new WindowBase('content_frame');
-  contentFrame.title = 'CONTENT FRAME';
   contentFrame.contentDirection = 0;
   windowRoot.addChild(contentFrame);
 
   const textLog = new WindowText('text_log');
-  textLog.title = 'TEXT LOG';
-  textLog.titlePosition = 1;
-  textLog.borders = BORDER_INVISIBLE_TOP;
   textLog.padding = PADDING_EVEN;
   textLog.addText(
     'you are standing in a place\nthere is some stuff\nexits are some directions or whatever\n\nwhat do you do I guess'
@@ -41,7 +36,6 @@ function buildWindow(el = document.body) {
   contentFrame.addChild(textLog);
 
   const statusPanel = new WindowBase('status_panel');
-  statusPanel.title = 'STATUS PANEL';
   statusPanel.titlePosition = TitlePosition.center;
   statusPanel.borders = new Borders('│', '', ' ', '', '│', '', '│', '');
   statusPanel.sizeWeight = 0;
@@ -49,7 +43,6 @@ function buildWindow(el = document.body) {
   contentFrame.addChild(statusPanel);
 
   const textField = new WindowTextinput();
-  textField.title = 'TEXT FIELD';
   textField.borders = new Borders('', '', '─', '', '─', '─', '', '');
   textField.sizeMin = 4;
   windowRoot.addChild(textField);
