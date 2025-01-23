@@ -29,6 +29,7 @@ export class Borders {
 }
 
 // a handful of handy presets
+export const BORDER_INVISIBLE_TOP = new Borders('', '', ' ', '', '', '', '', '');
 export const BORDER_SINGLE = new Borders('│', '│', '─', '─', '┌', '┐', '└', '┘');
 export const BORDER_DOUBLE = new Borders('║', '║', '═', '═', '╔', '╗', '╚', '╝');
 export const BORDER_DOUBLE_SINGLE = new Borders('║', '║', '─', '─', '╓', '╖', '╙', '╜');
