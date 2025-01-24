@@ -43,9 +43,9 @@ export class WindowRoot extends WindowBase {
     return this._canvas;
   }
 
-  static async redraw() {
+  static redraw() {
     // TODO: batch redraws if they come in too fast
-    // TODO: check performance
+    // TODO: redraws are a bit slow
     WindowRoot._instance._update();
   }
 }
