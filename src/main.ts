@@ -7,6 +7,7 @@ import { Borders, BORDER_DOUBLE, BORDER_INVISIBLE_TOP, PADDING_EVEN } from './in
 import { TitlePosition, WindowBase } from './interface/window';
 import { FillDirection, WindowText } from './interface/window-text';
 import { WindowTextinput } from './interface/window-textinput';
+import { GameManager } from './game/game-manager';
 
 function main() {
   console.log('initializing');
@@ -49,6 +50,9 @@ function buildWindow(el = document.body) {
 
   windowRoot.changed = true;
   WindowRoot.redraw();
+
+  const gameManager = new GameManager();
+  textField.addEventListener('submittext', gameManager.onCommandSubmitted.bind(gameManager));
 }
 
 main();

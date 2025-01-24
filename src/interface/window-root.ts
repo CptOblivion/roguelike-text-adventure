@@ -44,6 +44,8 @@ export class WindowRoot extends WindowBase {
   }
 
   static redraw() {
+    // TODO: batch redraws if they come in too fast
+    // TODO: probably want drawing to be non-blocking
     WindowRoot._instance._update();
   }
 }
