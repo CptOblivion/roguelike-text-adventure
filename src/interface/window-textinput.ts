@@ -69,8 +69,8 @@ export class WindowTextinput extends WindowBase implements EventEmitter {
     this.requestRedraw();
   }
 
-  protected override _update(): ASCIICanvas {
-    this._canvas.clear();
+  protected override async _update(): Promise<ASCIICanvas> {
+    await this._canvas.clear();
     this._canvas.writeString(this._text + '█', [this.indexLeft, this.indexTop]);
     super._update();
     return this._canvas;

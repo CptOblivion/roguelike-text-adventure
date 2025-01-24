@@ -4,6 +4,8 @@ import { ASCIICanvas } from './ascii-canvas';
 export class WindowRoot extends WindowBase {
   private _el: HTMLElement;
   private static _instance: WindowRoot;
+  private _drawing: boolean = false;
+  private _redraw_queued: boolean = false;
 
   constructor(el: HTMLElement) {
     if (WindowRoot._instance !== undefined) {
@@ -36,16 +38,28 @@ export class WindowRoot extends WindowBase {
     this._update();
   }
 
-  protected override _update(): ASCIICanvas {
-    super._update();
+  protected override async _update(): Promise<ASCIICanvas> {
+    await super._update();
     // WindowBase.prototype._update.call(this);
     this._el.innerHTML = this._canvas.render();
     return this._canvas;
   }
 
   static redraw() {
-    // TODO: batch redraws if they come in too fast
-    // TODO: redraws are a bit slow
-    WindowRoot._instance._update();
+    // TODO: actual redraw queue and batch, not... *gestures at this*
+    // TODO: maybe while we're drawing to the screen, we should lock writes to canvases or something
+    const instance = WindowRoot._instance;
+    if (instance._drawing) {
+      instance._redraw_queued = true;
+      return;
+    }
+    instance._drawing = true;
+    WindowRoot._instance._update().then(() => {
+      instance._drawing = false;
+      if (instance._redraw_queued) {
+        // currently if we consistently queue the next redraw before the last one finished, I think we'll run out of stack
+        WindowRoot.redraw();
+      }
+    });
   }
 }

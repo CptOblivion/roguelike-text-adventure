@@ -85,8 +85,8 @@ export class WindowText extends WindowBase implements TextDisplay {
     }, delay);
   }
 
-  protected override _update(): ASCIICanvas {
-    this._canvas.clear();
+  protected override async _update(): Promise<ASCIICanvas> {
+    await this._canvas.clear();
     super._update();
     if (this.fillDirection === FillDirection.topDown) {
       this._canvas.writeString(this._text, [this.indexLeft, this.indexTop]);

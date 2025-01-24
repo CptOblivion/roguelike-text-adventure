@@ -10,7 +10,6 @@ import { WindowTextinput } from './interface/window-textinput';
 import { GameManager } from './game/game-manager';
 
 function main() {
-  console.log('initializing');
   const docMain = document.getElementById('main');
   setDarkMode(true);
   docMain.innerHTML = 'loading...';

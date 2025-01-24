@@ -1,6 +1,7 @@
 import { Borders, Sides } from './borders';
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowRoot } from './window-root';
+import { Position } from '../common';
 
 // abusing truthiness in JS to map horizontal to false
 export enum ChildrenDirections {
@@ -173,7 +174,7 @@ export class WindowBase {
     WindowRoot.redraw();
   }
 
-  protected _update(): ASCIICanvas {
+  protected async _update(): Promise<ASCIICanvas> {
     if (!this.changed) return this._canvas;
     this._fillBorder();
     if (this._children.length === 0) {
@@ -182,25 +183,41 @@ export class WindowBase {
 
     const sizes = this._negotiateChildrenSize();
     let contentPos = this.contentStart;
+    const promises = [];
     // TODO: async the children
     if (this.contentDirection) {
       // vertical
       for (const i in this._children) {
-        this._children[i].resize(this.interiorWidth, sizes[i].size);
-        const childGrid = this._children[i]._update();
-        this._canvas.blit(childGrid, [this.indexLeft, contentPos]);
-        contentPos += childGrid.height;
+        promises.push(
+          this._renderChild(
+            this._children[i],
+            [this.indexLeft, contentPos],
+            this.interiorWidth,
+            sizes[i].size
+          )
+        );
+        contentPos += sizes[i].size;
       }
     } else {
       // horizontal
       for (const i in this._children) {
-        this._children[i].resize(sizes[i].size, this.interiorHeight);
-        const childGrid = this._children[i]._update();
-        this._canvas.blit(childGrid, [contentPos, this.indexTop]);
-        contentPos += childGrid.width;
+        this._renderChild(
+          this._children[i],
+          [contentPos, this.indexTop],
+          sizes[i].size,
+          this.interiorHeight
+        );
+        contentPos += sizes[i].size;
       }
     }
+    await Promise.all(promises);
     return this._canvas;
+  }
+
+  private async _renderChild(child: WindowBase, position: Position, width: number, height: number) {
+    child.resize(width, height);
+    const canvas = await child._update();
+    this._canvas.blit(canvas, position);
   }
 
   private _negotiateChildrenSize(): SizeWithLock[] {
