@@ -41,7 +41,7 @@ export class WindowRoot extends WindowBase {
   protected override async _update(): Promise<ASCIICanvas> {
     await super._update();
     // WindowBase.prototype._update.call(this);
-    this._el.innerHTML = this._canvas.render();
+    this._el.textContent = this._canvas.render();
     return this._canvas;
   }
 

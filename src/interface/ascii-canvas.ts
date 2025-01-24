@@ -69,11 +69,6 @@ export class ASCIICanvas {
   }
 
   render(): string {
-    return this._canvas.map((row) => row.map(fixSpaces).join('')).join('\n');
+    return this._canvas.map((row) => row.join('')).join('\n');
   }
-}
-
-function fixSpaces(char): string {
-  if (char === ' ') return '&nbsp';
-  return char;
 }
