@@ -182,6 +182,7 @@ export class WindowBase {
 
     const sizes = this._negotiateChildrenSize();
     let contentPos = this.contentStart;
+    // TODO: async the children
     if (this.contentDirection) {
       // vertical
       for (const i in this._children) {

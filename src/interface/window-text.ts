@@ -10,7 +10,7 @@ export enum FillDirection {
 export class WindowText extends WindowBase implements TextDisplay {
   textHeight: number = 0;
   fillDirection: FillDirection = FillDirection.topDown;
-  fillDelay: number = 10;
+  fillDelay: number = 5;
 
   private _text: string = '';
   private _fillText: string = '';
