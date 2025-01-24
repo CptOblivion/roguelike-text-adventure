@@ -20,7 +20,7 @@ function main() {
 
 function buildWindow(el = document.body) {
   const windowRoot = new WindowRoot(el);
-  windowRoot.title = 'DEFINITELY A REAL GAME';
+  windowRoot.title = ' DEFINITELY A REAL GAME ';
   windowRoot.borders = BORDER_DOUBLE;
   windowRoot.titlePosition = 1;
 
