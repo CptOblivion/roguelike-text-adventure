@@ -1,12 +1,13 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
+import { TextDisplay } from '../common';
 
 export enum FillDirection {
   topDown = 0,
   bottomUp = 1,
 }
 
-export class WindowText extends WindowBase {
+export class WindowText extends WindowBase implements TextDisplay {
   textHeight: number = 0;
   fillDirection: FillDirection = FillDirection.topDown;
   fillDelay: number = 10;
@@ -43,6 +44,11 @@ export class WindowText extends WindowBase {
    */
   addLine(text: string) {
     this.addText('\n' + text);
+  }
+
+  submitMessage(message: string) {
+    // TODO: option to skip typing
+    this.addLine(message);
   }
 
   private _typeText(text: string, delay: number) {

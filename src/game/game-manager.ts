@@ -1,7 +1,12 @@
-import { EventText } from '../common';
+import { EventText, TextDisplay } from '../common';
 
 export class GameManager {
+  textLog: TextDisplay;
   onCommandSubmitted(ev: EventText) {
-    console.log(`submitted ${ev.text}`);
+    if (!this.textLog) {
+      console.log(`attempted to submit text "${ev.text}" but no text log assigned`);
+      return;
+    }
+    this.textLog.submitMessage(`\n> ${ev.text}`);
   }
 }

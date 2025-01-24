@@ -52,6 +52,7 @@ function buildWindow(el = document.body) {
   WindowRoot.redraw();
 
   const gameManager = new GameManager();
+  gameManager.textLog = textLog;
   textField.addEventListener('submittext', gameManager.onCommandSubmitted.bind(gameManager));
 }
 
