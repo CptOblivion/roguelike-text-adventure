@@ -22,6 +22,7 @@ export class WindowText extends WindowBase implements TextDisplay {
    * @param text
    */
   setText(text: string) {
+    // TODO: word wrap
     this._text = text;
     this.textHeight = (text.match(/\n/g) || []).length;
     this.changed = true;

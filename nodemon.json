@@ -1,5 +1,5 @@
 {
-  "watch": ["src"],
+  "watch": ["src", "src/game/parser.ts"],
   "ext": "ts,json,html,css",
   "ignore": ["src/**/*.spec.ts"],
   "exec": "npm run build && ts-node ./build/server.js"

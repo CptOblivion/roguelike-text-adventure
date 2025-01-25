@@ -33,8 +33,7 @@ export class WindowTextinput extends WindowBase implements EventEmitter {
     this._capturing = true;
   }
 
-  // I'm sure TS has a means to create a generic addEventListener for all types in EventListenerMap
-  // TODO: verify that the string type matches properly (I'm fairly confident that const type won't)
+  // TODO I'm sure TS has a means to create a generic addEventListener for all types in EventListenerMap
   addEventListener(type: typeof EVENT_SUBMIT_TEXT, listener: ListenerSubmitText) {
     this._eventListeners[type].add(listener);
   }
@@ -44,6 +43,10 @@ export class WindowTextinput extends WindowBase implements EventEmitter {
   }
 
   private _handleKeyInput(event: KeyboardEvent) {
+    if (event.metaKey || event.ctrlKey || event.altKey) {
+      // let the browser have hotkeys
+      return;
+    }
     if (event.key === 'Enter') {
       this._submitText();
       event.preventDefault();
