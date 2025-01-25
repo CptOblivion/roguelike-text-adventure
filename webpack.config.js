@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'development',
-  cache: false,
+  cache: false, // webpack cache issue with src/game/parser.ts not getting changes once cache is established
   devtool: 'inline-source-map',
   entry: {
     main: './src/main.ts',
