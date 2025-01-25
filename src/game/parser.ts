@@ -39,10 +39,11 @@ export class Parser {
     // call action for matched matcher
     // pass result to world state
     // print response
-    return inputCleaned;
+    console.log(`cleaned: "${inputCleaned}"`);
+    // return inputCleaned;
 
-    // return RESPONSES_PARSE_FAILURE[Math.floor(Math.random() * RESPONSES_PARSE_FAILURE.length)](
-    //   input
-    // );
+    return RESPONSES_PARSE_FAILURE[Math.floor(Math.random() * RESPONSES_PARSE_FAILURE.length)](
+      input
+    );
   }
 }

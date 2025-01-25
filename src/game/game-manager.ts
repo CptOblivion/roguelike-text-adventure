@@ -14,7 +14,6 @@ export class GameManager {
       console.log(`attempted to submit text "${ev.text}" but no text log assigned`);
       return;
     }
-    console.log('some change');
     const response = this.parser.parse(ev.text);
     this.textLog.submitMessage(`\n> ${ev.text}\n${response}`);
   }

@@ -3,6 +3,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'development',
+  cache: false,
   devtool: 'inline-source-map',
   entry: {
     main: './src/main.ts',
@@ -10,6 +11,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'main.js',
+    clean: true,
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
@@ -21,5 +23,13 @@ module.exports = {
         loader: 'ts-loader',
       },
     ],
+  },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'build'),
+    },
+    compress: true,
+    port: 3000,
+    hot: false,
   },
 };
