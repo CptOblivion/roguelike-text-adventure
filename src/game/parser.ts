@@ -1,4 +1,20 @@
-type MatcherAction = (args: RegExpMatchArray) => string;
+type MatcherAction = (args: RegExpMatchArray) => ActionParsed;
+
+export enum Action {
+  go = 0,
+  get = 1,
+  use = 2,
+  give = 3,
+  put = 4, // extends to throw, place, drop, etc
+}
+
+interface ActionParsed {
+  action: Action;
+  direction?: string;
+  // world state will try to find a matching valid subject
+  subject?: string;
+  object?: string;
+}
 
 class Matcher {
   name: string;
@@ -11,14 +27,14 @@ class Matcher {
     this.action = action;
   }
 
-  match(input: string): string | null {
+  match(input: string): ActionParsed | null {
     const result = this.regex.exec(input);
     if (result === null) return null;
     return this.action(result);
   }
 }
 
-function goDirection([, direction]): string {
+function goDirection([, direction]): ActionParsed {
   direction = direction.toLowerCase();
   const shorthand = {
     n: 'north',
@@ -26,7 +42,7 @@ function goDirection([, direction]): string {
     e: 'east',
     w: 'west',
   };
-  return `you go ${shorthand[direction] ?? direction}`;
+  return { action: Action.go, direction: shorthand[direction] ?? direction };
 }
 
 const MATCHERS = [
@@ -34,13 +50,16 @@ const MATCHERS = [
   new Matcher(
     'go_object',
     /^go (.+)(?: (?:the|ye|that|those))? (.+)$/,
-    ([, direction, target]) => `you go ${direction} the ${target}`
+    ([, direction, target]) => ({ action: Action.go, direction: direction, subject: target })
   ),
   new Matcher('go_simple', /^go (.+)/i, goDirection),
   new Matcher(
     'get',
     /^get(?: (?:the|ye|that|those))? (.+)$/, // should we add a `from` clause?
-    ([, target]) => `you pick up the ${target}`
+    ([, target]) => ({
+      action: Action.get,
+      subject: target,
+    })
   ),
 ];
 
@@ -51,13 +70,12 @@ const RESPONSES_PARSE_FAILURE: ((prompt: string) => string)[] = [
 ];
 
 export class Parser {
-  parse(input: string): string {
+  parse(input: string): ActionParsed | string {
     // wipe punctuation and normalize whitespace
     // not sure how they'd get a tab in there, but why not cover it anyways
     let inputCleaned = input.replace(/(?:\.|,|\!|\?|\t| )+/g, ' ').trim();
     console.log(`cleaned: "${inputCleaned}"`);
 
-    // TODO: plug into game logic
     for (const matcher of MATCHERS) {
       const resp = matcher.match(inputCleaned);
       if (resp) {
