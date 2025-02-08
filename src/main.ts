@@ -30,7 +30,7 @@ function buildWindow(el = document.body) {
   const textLog = new WindowText('text_log');
   textLog.padding = PADDING_EVEN;
   textLog.addText(
-    'you are standing in a place\nthere is some stuff\nexits are some directions or whatever\n\nwhat do you do I guess'
+    'You drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that stood watch, waiting, while you slept.\nOn the starboard wall is a hatch wich a lever beside it.\nYou have nothing.\nYou must escape.'
   );
   textLog.fillDirection = FillDirection.bottomUp;
   contentFrame.addChild(textLog);
