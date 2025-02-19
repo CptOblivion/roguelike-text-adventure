@@ -1,3 +1,5 @@
 import { Character } from './character';
 
-export class Player extends Character {}
+export class Player extends Character {
+  static current: Player;
+}

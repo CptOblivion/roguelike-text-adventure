@@ -1,16 +1,4 @@
-import { GameObject } from './game-object';
-
-export class Exits {
-  north?: Room;
-  south?: Room;
-  east?: Room;
-  west?: Room;
-  other: { [key: string]: Room } = {};
-}
-
-export class Room extends GameObject {
-  exits: Exits = new Exits();
-}
+import { Room } from './room';
 
 export class WorldStateManager {
   map: Room[] = [];
