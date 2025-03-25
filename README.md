@@ -11,7 +11,7 @@ npm init
 npm run build
 ```
 
-### To build for dev (nodemon watch with simple host on localhost:3000):
+### To build for dev (webpack watch with server on localhost:3000):
 
 ```
 npm init
