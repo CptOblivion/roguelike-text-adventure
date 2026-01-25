@@ -15,8 +15,9 @@ npm run build
 
 ```
 npm init
-npm run build
 npm run dev
 ```
+
+(dev mode may keep files in memory, so build directory might not appear)
 
 :]
