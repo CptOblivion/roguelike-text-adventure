@@ -18,4 +18,6 @@ npm init
 npm run dev
 ```
 
+(dev mode may keep files in memory, so build directory might not appear)
+
 :]

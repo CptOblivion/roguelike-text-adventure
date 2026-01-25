@@ -38,4 +38,11 @@ export class GameObject {
     if (this.attributes.size > Size.medium) return [false, 'too large'];
     if (this.attributes.weight > Weight.light) return [false, 'too heavy'];
   }
+
+  get(newParent: GameObject): FailWithReason {
+    const [canGet, reason] = this.canGet();
+    if (!canGet) return [false, reason];
+    this.setParent(newParent);
+    return Success;
+  }
 }
