@@ -34,6 +34,7 @@ export class WindowRoot extends WindowBase {
     const heightTwoChars = this._el.offsetHeight;
     const width = this._el.innerHTML.length - 1;
     const height = Math.floor(window.innerHeight / (heightTwoChars - baseHeight));
+    WindowBase.redraw = this._redrawRoot;
     this.resize(width, height);
     this._update();
   }
@@ -45,7 +46,7 @@ export class WindowRoot extends WindowBase {
     return this._canvas;
   }
 
-  static redraw() {
+  _redrawRoot() {
     // TODO: actual redraw queue and batch, not... *gestures at this*
     // TODO: maybe while we're drawing to the screen, we should lock writes to canvases or something
     const instance = WindowRoot._instance;

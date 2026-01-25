@@ -1,6 +1,5 @@
 import { Borders, Sides } from './borders';
 import { ASCIICanvas } from './ascii-canvas';
-import { WindowRoot } from './window-root';
 import { Position } from '../common';
 
 // abusing truthiness in JS to map horizontal to false
@@ -25,6 +24,11 @@ export class WindowBase {
   title?: string;
   titlePosition: TitlePosition = TitlePosition.left;
   titleShift = 3;
+
+  // reassign once root is initialized
+  static redraw = (): void => {
+    throw new Error('no window root instance defined');
+  };
 
   width: number = 0;
   height: number = 0;
@@ -171,7 +175,7 @@ export class WindowBase {
 
   requestRedraw() {
     this.changed = true;
-    WindowRoot.redraw();
+    WindowBase.redraw();
   }
 
   protected async _update(): Promise<ASCIICanvas> {
@@ -193,8 +197,8 @@ export class WindowBase {
             this._children[i],
             [this.indexLeft, contentPos],
             this.interiorWidth,
-            sizes[i].size
-          )
+            sizes[i].size,
+          ),
         );
         contentPos += sizes[i].size;
       }
@@ -205,7 +209,7 @@ export class WindowBase {
           this._children[i],
           [contentPos, this.indexTop],
           sizes[i].size,
-          this.interiorHeight
+          this.interiorHeight,
         );
         contentPos += sizes[i].size;
       }

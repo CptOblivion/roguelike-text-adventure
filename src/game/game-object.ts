@@ -1,4 +1,3 @@
-import { Player } from './player';
 import { Temperature, MatterState, Weight, Color, Size } from './units';
 import { FailWithReason, Success } from '../common';
 
@@ -40,10 +39,10 @@ export class GameObject {
     if (this.attributes.weight > Weight.light) return [false, 'too heavy'];
   }
 
-  get(): FailWithReason {
+  get(newParent: GameObject): FailWithReason {
     const [canGet, reason] = this.canGet();
     if (!canGet) return [false, reason];
-    this.setParent(Player.current);
+    this.setParent(newParent);
     return Success;
   }
 }
