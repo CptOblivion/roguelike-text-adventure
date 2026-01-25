@@ -1,4 +1,7 @@
-type MatcherAction = (args: RegExpMatchArray) => ActionParsed;
+/**
+ * return ActionParsed to send action to game logic, return string to print response directly with no further impact
+ */
+type MatcherAction = (args: RegExpMatchArray) => ActionParsed | string;
 
 export enum Action {
   go = 0,
@@ -27,7 +30,7 @@ class Matcher {
     this.action = action;
   }
 
-  match(input: string): ActionParsed | null {
+  match(input: string): ActionParsed | string | null {
     const result = this.regex.exec(input);
     if (result === null) return null;
     return this.action(result);
@@ -46,6 +49,7 @@ function goDirection([, direction]): ActionParsed {
 }
 
 const MATCHERS = [
+  new Matcher('greeting', /^(hi|hello|howdy|heya)$/i, () => 'hi!'),
   new Matcher('go_shorthand', /^(north|south|east|west|n|s|e|w)$/i, goDirection),
   new Matcher(
     'go_object',
