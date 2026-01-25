@@ -15,6 +15,7 @@ npm run build
 
 ```
 npm init
+npm run build
 npm run dev
 ```
 

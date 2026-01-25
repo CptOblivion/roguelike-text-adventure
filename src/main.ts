@@ -1,6 +1,7 @@
 // copy base html and css
-require('file-loader?name=[name].[ext]!./index.html');
-require('file-loader?name=[name].[ext]!./styles.css');
+require('file-loader?name=[name].[ext]!./public/index.html');
+require('file-loader?name=[name].[ext]!./public/styles.css');
+require('file-loader?name=[name].[ext]!./public/favicon.png');
 
 import { WindowRoot } from './interface/window-root';
 import { Borders, BORDER_DOUBLE, BORDER_INVISIBLE_TOP, PADDING_EVEN } from './interface/borders';
@@ -30,7 +31,7 @@ function buildWindow(el = document.body) {
   const textLog = new WindowText('text_log');
   textLog.padding = PADDING_EVEN;
   textLog.addText(
-    'You drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that stood watch, waiting, while you slept.\nOn the starboard wall is a hatch wich a lever beside it.\nYou have nothing.'
+    'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that silently stood watch, waiting, while you slept.\nOn the starboard wall is a hatch wich a lever beside it.\nYou have nothing.',
   );
   textLog.fillDirection = FillDirection.bottomUp;
   contentFrame.addChild(textLog);
