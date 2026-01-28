@@ -1,7 +1,9 @@
+import { THE, match } from './regex';
+
 /**
  * return ActionParsed to send action to game logic, return string to print response directly with no further impact
  */
-type MatcherAction = (args: RegExpMatchArray) => ActionParsed | string;
+type MatcherAction = (args: { [key: string]: string }) => ActionParsed | string;
 
 export enum Action {
   go = 0,
@@ -33,11 +35,11 @@ class Matcher {
   match(input: string): ActionParsed | string | null {
     const result = this.regex.exec(input);
     if (result === null) return null;
-    return this.action(result);
+    return this.action(result.groups);
   }
 }
 
-function goDirection([, direction]): ActionParsed {
+function goDirection({ direction }: { [key: string]: string }): ActionParsed {
   direction = direction.toLowerCase();
   const shorthand = {
     n: 'north',
@@ -49,21 +51,59 @@ function goDirection([, direction]): ActionParsed {
 }
 
 const MATCHERS = [
-  new Matcher('greeting', /^(hi|hello|howdy|heya)$/i, () => 'hi!'),
-  new Matcher('go_shorthand', /^(north|south|east|west|n|s|e|w)$/i, goDirection),
+  new Matcher('greeting', match('(hi|hello|howdy|heya)'), () => 'hi!'),
+
+  new Matcher('go_shorthand', match('(?<direction>north|south|east|west|n|s|e|w)'), goDirection),
+
   new Matcher(
     'go_object',
-    /^go (.+)(?: (?:the|ye|that|those))? (.+)$/,
-    ([, direction, target]) => ({ action: Action.go, direction: direction, subject: target })
+    match(`go (?<direction>.+)${THE}(?<target>.+)`),
+    ({ direction, target }) => ({
+      action: Action.go,
+      direction: direction,
+      subject: target,
+    }),
   ),
-  new Matcher('go_simple', /^go (.+)/i, goDirection),
+
+  new Matcher('go_simple', match('go (?<direction>.+)'), goDirection),
+
   new Matcher(
     'get',
-    /^get(?: (?:the|ye|that|those))? (.+)$/, // should we add a `from` clause?
-    ([, target]) => ({
+    match(`get${THE}(?<target>.+)`), // should we add a `from` clause?
+    ({ target }) => ({
       action: Action.get,
       subject: target,
-    })
+    }),
+  ),
+
+  new Matcher(
+    'use',
+    match(`(use)${THE}(?<subject>.+) (on|with)${THE}(?<object>.+)`),
+    ({ subject, object }) => ({
+      action: Action.use,
+      subject,
+      object,
+    }),
+  ),
+
+  new Matcher(
+    'give',
+    match(`(give)${THE}(?<subject>.+) (to)${THE}(?<object>.+)`),
+    ({ subject, object }) => ({
+      action: Action.give,
+      subject,
+      object,
+    }),
+  ),
+
+  new Matcher(
+    'put',
+    match(`(put|place|drop|set)${THE}(?<subject>.+) (on|in)${THE}(?<object>.+)`),
+    ({ subject, object }) => ({
+      action: Action.put,
+      subject,
+      object,
+    }),
   ),
 ];
 
@@ -88,7 +128,7 @@ export class Parser {
     }
 
     return RESPONSES_PARSE_FAILURE[Math.floor(Math.random() * RESPONSES_PARSE_FAILURE.length)](
-      input
+      input,
     );
   }
 }
