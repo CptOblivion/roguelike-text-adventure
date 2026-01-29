@@ -14,14 +14,14 @@ export class RichText {
   // TODO: replace with a render(maxLineLength: ?number, substring: [number, ?number]),
   // truncates to substring, handles line wrapping, outputs divs split into largest possible
   // given common css and broken across lines
-  public getCharacterAt(offset: number): [character: string, css: string] {
-    return [
-      this.rawText[offset],
+  public getCharacterAt(offset: number): CharacterWithStyle {
+    return new CharacterWithStyle(
+      this.rawText.charAt(offset),
       this.sections
         .filter((section) => section.start <= offset && section.end > offset)
         .map((section) => section.getStyles())
         .join(',\n'),
-    ];
+    );
   }
 
   public append(text: RichText): RichText {
@@ -40,6 +40,19 @@ export class RichText {
 
   public getLength(): number {
     return this.rawText.length;
+  }
+}
+
+export class CharacterWithStyle {
+  public character: string;
+  public style: string;
+
+  constructor(character: string, style: string) {
+    if (character.length != 1) {
+      throw new Error(`character initialized with invalid count: ${character.length}`);
+    }
+    this.character = character;
+    this.style = style;
   }
 }
 

@@ -1,9 +1,10 @@
 import { Position } from '../common';
+import { CharacterWithStyle } from '../text/richtext';
 
 export class ASCIICanvas {
   width: number = 0;
   height: number = 0;
-  private _canvas: string[][] = new Array();
+  private _canvas: CharacterWithStyle[][] = new Array();
 
   clear() {
     this._canvas = new Array(this.height).fill(undefined);
@@ -26,14 +27,21 @@ export class ASCIICanvas {
     return true;
   }
 
-  getAt(x: number, y: number): string {
+  getAt(x: number, y: number): CharacterWithStyle {
     if (!this.checkBounds([x, y])) return undefined;
     return this._canvas[y][x];
   }
 
-  setAt(value: string, position: Position) {
+  setAt(value: CharacterWithStyle | string, position: Position) {
+    let character: CharacterWithStyle = (() => {
+      if (typeof value !== 'string') {
+        return value;
+      }
+      return new CharacterWithStyle(value, '');
+    })();
+
     if (!this.checkBounds(position)) return;
-    this._canvas[position[1]][position[0]] = value;
+    this._canvas[position[1]][position[0]] = character;
   }
 
   clamp([x, y]: Position): Position {
@@ -59,16 +67,21 @@ export class ASCIICanvas {
   }
 
   writeString(src: string, [x, y]: Position) {
-    const textRows = src.split('\n');
-    for (let offsY = 0; offsY < textRows.length; offsY++) {
+    const divs = textToCharacters(src.split('\n'));
+    for (let offsY = 0; offsY < divs.length; offsY++) {
       // TODO: process markdown (colors, links, etc)
-      for (let offsX = 0; offsX < textRows[offsY].length; offsX++) {
-        this.setAt(textRows[offsY][offsX], [x + offsX, y + offsY]);
+      for (let offsX = 0; offsX < divs[offsY].length; offsX++) {
+        this.setAt(divs[offsY][offsX], [x + offsX, y + offsY]);
       }
     }
   }
 
   render(): string {
-    return this._canvas.map((row) => row.join('')).join('\n');
+    const output = this._canvas.map((row) => row.map((char) => char.character).join('')).join('\n');
+    return output;
   }
+}
+
+function textToCharacters(text: string[]): CharacterWithStyle[][] {
+  return text.map((row) => row.split('').map((char) => new CharacterWithStyle(char, '')));
 }
