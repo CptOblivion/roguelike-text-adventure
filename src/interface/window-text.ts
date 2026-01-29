@@ -95,6 +95,7 @@ export class WindowText extends WindowBase implements TextDisplay {
         this._filling = false;
         this._typeText(new RichText('', []), this.fillDelay);
       }
+      this.requestRedraw();
     }, delay);
   }
 

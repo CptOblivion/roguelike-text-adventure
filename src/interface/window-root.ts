@@ -55,6 +55,7 @@ export class WindowRoot extends WindowBase {
       return;
     }
     instance._drawing = true;
+    instance._redraw_queued = false;
     WindowRoot._instance._update().then(() => {
       instance._drawing = false;
       if (instance._redraw_queued) {
