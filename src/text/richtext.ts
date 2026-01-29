@@ -23,6 +23,24 @@ export class RichText {
         .join(',\n'),
     ];
   }
+
+  public append(text: RichText): RichText {
+    // TODO: merge sections with overlap
+    console.log('appending');
+    return new RichText(this.rawText + text.rawText, this.sections.concat(text.sections));
+  }
+
+  public substring(start: number, end: number = this.rawText.length): RichText {
+    return new RichText(
+      this.rawText.substring(start, end),
+      // TODO: test this doesn't clip incorrectly
+      this.sections.filter((section) => section.end > start && section.start <= end),
+    );
+  }
+
+  public getLength(): number {
+    return this.rawText.length;
+  }
 }
 
 export enum RichTextColor {

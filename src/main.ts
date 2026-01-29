@@ -9,6 +9,7 @@ import { TitlePosition, WindowBase } from './interface/window';
 import { FillDirection, WindowText } from './interface/window-text';
 import { WindowTextinput } from './interface/window-textinput';
 import { GameManager } from './game/game-manager';
+import { RichText } from './text/richtext';
 
 function main() {
   const docMain = document.getElementById('main');
@@ -31,7 +32,10 @@ function buildWindow(el = document.body) {
   const textLog = new WindowText('text_log');
   textLog.padding = PADDING_EVEN;
   textLog.addText(
-    'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that silently stood watch, waiting, while you slept.\nOn the starboard wall is a hatch with a lever beside it.\nYou have nothing.',
+    new RichText(
+      'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that silently stood watch, waiting, while you slept.\nOn the starboard wall is a hatch with a lever beside it.\nYou have nothing.',
+      [],
+    ),
   );
   textLog.fillDirection = FillDirection.bottomUp;
   contentFrame.addChild(textLog);

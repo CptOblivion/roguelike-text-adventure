@@ -1,6 +1,7 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
 import { TextDisplay } from '../common';
+import { RichText } from '../text/richtext';
 
 export enum FillDirection {
   topDown = 0,
@@ -9,12 +10,12 @@ export enum FillDirection {
 
 export class WindowText extends WindowBase implements TextDisplay {
   // TODO: with word wrap, this will be wrong
-  textHeight: number = 0;
   fillDirection: FillDirection = FillDirection.topDown;
   fillDelay: number = 5;
 
-  private _text: string = '';
-  private _fillText: string = '';
+  private _text: RichText = new RichText('', []);
+
+  private _fillOffset: number = 0;
   private _filling = false;
 
   /**
@@ -22,10 +23,9 @@ export class WindowText extends WindowBase implements TextDisplay {
    * ignores fillDelay
    * @param text
    */
-  setText(text: string) {
+  setText(text: RichText) {
     // TODO: word wrap
     this._text = text;
-    this.textHeight = (text.match(/\n/g) || []).length;
     this.changed = true;
     this.requestRedraw();
   }
@@ -35,7 +35,7 @@ export class WindowText extends WindowBase implements TextDisplay {
    * does not begin on a new line
    * @param text
    */
-  addText(text: string) {
+  addText(text: RichText) {
     this._typeText(text, this.fillDelay);
   }
 
@@ -44,25 +44,35 @@ export class WindowText extends WindowBase implements TextDisplay {
    * begins on a new line
    * @param text
    */
-  addLine(text: string) {
-    this.addText('\n' + text);
+  addLine(text: RichText) {
+    this.addText(new RichText('\n', []).append(text));
   }
 
   submitMessage(message: string) {
     // TODO: option to skip typing
-    this.addLine(message);
+    // TODO: make message be RichText
+    this.addLine(new RichText(message, []));
   }
 
-  private _typeText(text: string, delay: number) {
+  private _typeText(text: RichText, delay: number) {
+    if (!this._filling) {
+      // we don't want to set this if we're already in the middle of typing some older text
+      this._fillOffset = this._text.getLength();
+    }
+
+    this.setText(this._text.append(text));
+
     if (delay == 0) {
-      this.setText(this._text + text);
+      this._fillOffset = this._text.getLength();
       return;
     }
+
     // TODO: check if this can be a race condition
-    this._fillText += text;
+    // if we're already typing, let the existing interval keep going
     if (this._filling == true) {
       return;
     }
+
     this._filling = true;
     const intervalID = setInterval(() => {
       // TODO: parse markdown
@@ -72,17 +82,18 @@ export class WindowText extends WindowBase implements TextDisplay {
         // technically 3 should be 1.333..., (1, and then 2 every third interval); we're just ignoring that 'cuz 1 is close enough
         numChars = 4 / delay;
       }
-      this.setText(this._text + this._fillText.substring(0, numChars));
-      // TODO maybe we should just move a pointer instead of constantly making substrings
-      this._fillText = this._fillText.substring(numChars);
-      if (this._fillText === '') {
+
+      this._fillOffset += numChars;
+      if (this._fillOffset >= this._text.getLength()) {
+        this._fillOffset = this._text.getLength();
         clearInterval(intervalID);
         this._filling = false;
       }
+
       if (this.fillDelay !== delay) {
         clearInterval(intervalID);
         this._filling = false;
-        this._typeText('', this.fillDelay);
+        this._typeText(new RichText('', []), this.fillDelay);
       }
     }, delay);
   }
@@ -91,7 +102,7 @@ export class WindowText extends WindowBase implements TextDisplay {
     await this._canvas.clear();
     super._update();
 
-    const wrappedText = this.wrapText(this._text);
+    const wrappedText = this.wrapText(this._text.substring(0, this._fillOffset).getRawText());
 
     if (this.fillDirection === FillDirection.topDown) {
       this._canvas.writeString(wrappedText.join('\n'), [this.indexLeft, this.indexTop]);
