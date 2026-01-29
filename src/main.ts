@@ -31,7 +31,7 @@ function buildWindow(el = document.body) {
   const textLog = new WindowText('text_log');
   textLog.padding = PADDING_EVEN;
   textLog.addText(
-    'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that silently stood watch, waiting, while you slept.\nOn the starboard wall is a hatch wich a lever beside it.\nYou have nothing.',
+    'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that silently stood watch, waiting, while you slept.\nOn the starboard wall is a hatch with a lever beside it.\nYou have nothing.',
   );
   textLog.fillDirection = FillDirection.bottomUp;
   contentFrame.addChild(textLog);

@@ -8,6 +8,7 @@ export enum FillDirection {
 }
 
 export class WindowText extends WindowBase implements TextDisplay {
+  // TODO: with word wrap, this will be wrong
   textHeight: number = 0;
   fillDirection: FillDirection = FillDirection.topDown;
   fillDelay: number = 5;
@@ -89,11 +90,42 @@ export class WindowText extends WindowBase implements TextDisplay {
   protected override async _update(): Promise<ASCIICanvas> {
     await this._canvas.clear();
     super._update();
+
+    const wrappedText = this.wrapText(this._text);
+
     if (this.fillDirection === FillDirection.topDown) {
-      this._canvas.writeString(this._text, [this.indexLeft, this.indexTop]);
+      this._canvas.writeString(wrappedText.join('\n'), [this.indexLeft, this.indexTop]);
     } else {
-      this._canvas.writeString(this._text, [this.indexLeft, this.indexBottom - this.textHeight]);
+      this._canvas.writeString(wrappedText.join('\n'), [
+        this.indexLeft,
+        this.indexBottom - wrappedText.length,
+      ]);
     }
     return this._canvas;
+  }
+
+  private wrapText(text: string): string[] {
+    return text.split('\n').flatMap((row) => {
+      let currentRow = row;
+      const rows: string[] = [];
+      while (currentRow.length > this.interiorWidth) {
+        // find the last space before the screen breaks
+        const breakIndex = currentRow.lastIndexOf(' ', this.interiorWidth);
+        console.log(breakIndex);
+        const newRow = (() => {
+          if (breakIndex === -1) {
+            // word was longer than the width of the screen, split it with a hyphen
+            return currentRow.substring(0, this.interiorWidth - 2) + '-';
+          }
+          return currentRow.substring(0, breakIndex);
+        })();
+        rows.push(newRow);
+        // indent wrapped rows
+        currentRow = '  ' + currentRow.substring(newRow.length + 1);
+      }
+      // add the remainder
+      rows.push(currentRow);
+      return rows;
+    });
   }
 }
