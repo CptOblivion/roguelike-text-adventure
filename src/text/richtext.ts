@@ -2,7 +2,7 @@ export class RichText {
   private rawText: string;
   private sections: RichTextSection[];
 
-  constructor(text: string, sections: RichTextSection[]) {
+  constructor(text: string, sections: RichTextSection[] = []) {
     this.rawText = text;
     this.sections = sections;
   }
@@ -26,11 +26,10 @@ export class RichText {
 
   public append(text: RichText): RichText {
     // TODO: merge sections with overlap
-    console.log('appending');
     return new RichText(this.rawText + text.rawText, this.sections.concat(text.sections));
   }
 
-  public substring(start: number, end: number = this.rawText.length): RichText {
+  public substring(start: number, end: number = this.getLength()): RichText {
     return new RichText(
       this.rawText.substring(start, end),
       // TODO: test this doesn't clip incorrectly
@@ -40,6 +39,23 @@ export class RichText {
 
   public getLength(): number {
     return this.rawText.length;
+  }
+
+  public rows(): RichText[] {
+    let offset = 0;
+    const rows: RichText[] = [];
+    let nextLine = this.rawText.indexOf('\n', offset);
+    while (nextLine >= 0) {
+      rows.push(this.substring(offset, nextLine));
+      offset = nextLine + 1;
+      nextLine = this.rawText.indexOf('\n', offset);
+    }
+    rows.push(this.substring(offset));
+    return rows;
+  }
+
+  public lastIndexOf(searchString: string, position?: number): number {
+    return this.rawText.lastIndexOf(searchString, position);
   }
 }
 

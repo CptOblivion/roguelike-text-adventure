@@ -1,5 +1,5 @@
 import { Position } from '../common';
-import { CharacterWithStyle } from '../text/richtext';
+import { CharacterWithStyle, RichText } from '../text/richtext';
 
 export class ASCIICanvas {
   width: number = 0;
@@ -66,13 +66,18 @@ export class ASCIICanvas {
     }
   }
 
-  writeString(src: string, [x, y]: Position) {
-    const divs = textToCharacters(src.split('\n'));
-    for (let offsY = 0; offsY < divs.length; offsY++) {
-      // TODO: process markdown (colors, links, etc)
-      for (let offsX = 0; offsX < divs[offsY].length; offsX++) {
-        this.setAt(divs[offsY][offsX], [x + offsX, y + offsY]);
+  writeRichText(src: RichText, [x, y]: Position) {
+    let offsX = 0;
+    let offsY = 0;
+    for (let i = 0; i < src.getLength(); i++) {
+      const char = src.getCharacterAt(i);
+      if (char.character === '\n') {
+        offsX = 0;
+        offsY++;
+        continue;
       }
+      this.setAt(char, [x + offsX, y + offsY]);
+      offsX++;
     }
   }
 
@@ -80,8 +85,4 @@ export class ASCIICanvas {
     const output = this._canvas.map((row) => row.map((char) => char.character).join('')).join('\n');
     return output;
   }
-}
-
-function textToCharacters(text: string[]): CharacterWithStyle[][] {
-  return text.map((row) => row.split('').map((char) => new CharacterWithStyle(char, '')));
 }

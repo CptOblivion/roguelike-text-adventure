@@ -33,7 +33,7 @@ function buildWindow(el = document.body) {
   textLog.padding = PADDING_EVEN;
   textLog.addText(
     new RichText(
-      'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that silently stood watch, waiting, while you slept.\nOn the starboard wall is a hatch with a lever beside it.\nYou have nothing.',
+      'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty space suit that silently stood watch, waiting, while you slept.\nOn the starboard wall is a hatch with a lever beside it.\n\nYou have nothing.',
       [],
     ),
   );

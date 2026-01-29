@@ -102,42 +102,44 @@ export class WindowText extends WindowBase implements TextDisplay {
   protected override async _update(): Promise<ASCIICanvas> {
     await this._canvas.clear();
     super._update();
-
-    const wrappedText = this.wrapText(this._text.substring(0, this._fillOffset).getRawText());
+    const wrappedText = this.wrapText(this._text.substring(0, this._fillOffset));
 
     if (this.fillDirection === FillDirection.topDown) {
-      this._canvas.writeString(wrappedText.join('\n'), [this.indexLeft, this.indexTop]);
+      for (let i = 0; i < wrappedText.length; i++) {
+        const row = wrappedText[i];
+        this._canvas.writeRichText(row, [this.indexLeft, this.indexTop + i]);
+      }
     } else {
-      this._canvas.writeString(wrappedText.join('\n'), [
-        this.indexLeft,
-        this.indexBottom - wrappedText.length,
-      ]);
+      for (let i = 0; i < wrappedText.length; i++) {
+        const row = wrappedText[wrappedText.length - 1 - i];
+        this._canvas.writeRichText(row, [this.indexLeft, this.indexBottom - i]);
+      }
     }
     return this._canvas;
   }
 
-  private wrapText(text: string): string[] {
-    return text.split('\n').flatMap((row) => {
+  private wrapText(text: RichText): RichText[] {
+    const rows = [];
+
+    for (const row of text.rows()) {
       let currentRow = row;
-      const rows: string[] = [];
-      while (currentRow.length > this.interiorWidth) {
+      while (currentRow.getLength() > this.interiorWidth) {
         // find the last space before the screen breaks
         const breakIndex = currentRow.lastIndexOf(' ', this.interiorWidth);
-        console.log(breakIndex);
         const newRow = (() => {
           if (breakIndex === -1) {
             // word was longer than the width of the screen, split it with a hyphen
-            return currentRow.substring(0, this.interiorWidth - 2) + '-';
+            return currentRow.substring(0, this.interiorWidth - 2).append(new RichText('-'));
           }
           return currentRow.substring(0, breakIndex);
         })();
         rows.push(newRow);
         // indent wrapped rows
-        currentRow = '  ' + currentRow.substring(newRow.length + 1);
+        currentRow = new RichText('  ').append(currentRow.substring(newRow.getLength() + 1));
       }
       // add the remainder
       rows.push(currentRow);
-      return rows;
-    });
+    }
+    return rows;
   }
 }
