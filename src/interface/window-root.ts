@@ -1,5 +1,6 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
+import { CharacterWithStyle } from '../text/richtext';
 
 const ROW_STYLE = `
 display: flex;
@@ -48,7 +49,9 @@ export class WindowRoot extends WindowBase {
       row.style = ROW_STYLE;
       children.push(row);
       for (let x = 0; x < width; x++) {
-        row.append(document.createElement('div'));
+        const char = document.createElement('div');
+        char.textContent = ' ';
+        row.append(char);
       }
     }
 
@@ -63,8 +66,14 @@ export class WindowRoot extends WindowBase {
     const canvas = this._canvas.render();
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
-        const char = canvas[y][x];
-        this.htmlGrid.children[y].children[x].textContent = char.character;
+        const newChar = canvas[y][x];
+        const oldChar = this.htmlGrid.children[y].children[x] as HTMLElement;
+        if (oldChar.textContent !== newChar.character) {
+          oldChar.textContent = newChar.character;
+        }
+        if (oldChar.style.cssText !== newChar.style) {
+          oldChar.style = newChar.style;
+        }
       }
     }
     return this._canvas;
