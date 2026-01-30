@@ -27,7 +27,7 @@ export class RichText {
   }
 
   // TODO: replace with a render(maxLineLength: ?number, substring: [number, ?number]),
-  // truncates to substring, handles line wrapping, outputs divs split into largest possible
+  // truncates to substring, handles line wrapping (maybe?), outputs divs split into largest possible
   // given common css and broken across lines
   public getCharacterAt(offset: number): CharacterWithStyle {
     const styles = this.sections
@@ -47,7 +47,22 @@ export class RichText {
     return new RichText(
       this.rawText.substring(start, end),
       // TODO: test this doesn't clip incorrectly
-      this.sections.filter((section) => section.end > start && section.start <= end),
+      this.sections
+        // only keep styles that overlap this substring
+        .filter((section) => section.end > start && section.start <= end)
+        .map((section) => {
+          const newSection = section.shifted(-start);
+
+          // styles shouldn't extend outside the string (or they'll risk bleeding into other text)
+          if (newSection.start < 0) {
+            newSection.start = 0;
+          }
+
+          if (newSection.end >= end - start) {
+            newSection.end = end - start;
+          }
+          return newSection;
+        }),
     );
   }
 
