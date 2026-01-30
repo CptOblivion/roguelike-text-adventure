@@ -37,7 +37,7 @@ export class ASCIICanvas {
       if (typeof value !== 'string') {
         return value;
       }
-      return new CharacterWithStyle(value, '');
+      return new CharacterWithStyle(value, '', []);
     })();
 
     if (!this.checkBounds(position)) return;

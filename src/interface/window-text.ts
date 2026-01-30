@@ -102,6 +102,7 @@ export class WindowText extends WindowBase implements TextDisplay {
   protected override async _update(): Promise<ASCIICanvas> {
     await this._canvas.clear();
     super._update();
+
     const wrappedText = this.wrapText(this._text.substring(0, this._fillOffset));
 
     if (this.fillDirection === FillDirection.topDown) {

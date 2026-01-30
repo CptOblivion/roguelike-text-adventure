@@ -1,3 +1,6 @@
+const EMPTY_FUNCTION = () => {};
+type EmptyFunction = () => void;
+
 export class RichText {
   private rawText: string;
   private sections: RichTextSection[];
@@ -30,11 +33,15 @@ export class RichText {
   // truncates to substring, handles line wrapping (maybe?), outputs divs split into largest possible
   // given common css and broken across lines
   public getCharacterAt(offset: number): CharacterWithStyle {
-    const styles = this.sections
-      .filter((section) => section.start <= offset && section.end > offset)
-      .map((section) => section.getStyles())
-      .join(' ');
-    return new CharacterWithStyle(this.rawText.charAt(offset), styles);
+    const sections = this.sections.filter(
+      (section) => section.start <= offset && section.end > offset,
+    );
+    const styles = sections.map((section) => section.getStyles()).join(' ');
+
+    const mutators = this.sections
+      .map((section) => section.mutateElem)
+      .filter((mutator) => mutator != null);
+    return new CharacterWithStyle(this.rawText.charAt(offset), styles, mutators);
   }
 
   public append(text: RichText): RichText {
@@ -91,21 +98,25 @@ export class RichText {
 export class CharacterWithStyle {
   public character: string;
   public style: string;
+  public mutators: MutateElem[];
 
-  constructor(character: string, style: string) {
+  constructor(character: string, style: string, mutators: MutateElem[]) {
     if (character.length != 1) {
       throw new Error(`character initialized with invalid count: ${character.length}`);
     }
     this.character = character;
     this.style = style;
+    this.mutators = mutators;
   }
 }
 
 export enum RichTextColor {
-  RED = 0xff0000,
-  GREEN = 0x00ff00,
-  BLUE = 0x0000ff,
+  RED = '#ff5454',
+  GREEN = '#00ff00',
+  BLUE = '#0000ff',
 }
+
+type MutateElem = (elem: HTMLElement) => EmptyFunction;
 
 abstract class RichTextSection {
   public start: number;
@@ -118,11 +129,16 @@ abstract class RichTextSection {
 
   public abstract getStyles(): string;
 
-  public shifted(offset: number): this {
-    const copy = Object.assign(this);
+  public shifted(offset: number): RichTextSection {
+    const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
     copy.start += offset;
     copy.end += offset;
     return copy;
+  }
+
+  // mutates the element. Returns a cleanup function to undo the mutation.
+  public mutateElem(elem: HTMLElement): EmptyFunction {
+    return EMPTY_FUNCTION;
   }
 }
 
@@ -146,11 +162,47 @@ class RichTextSectionColor extends RichTextSection {
   }
 
   public getStyles(): string {
-    debugger;
     return `color: ${this.color};`;
   }
 }
 
 export function richTextColor(color: RichTextColor): RichTextInstantiator {
   return (x: number, y: number) => new RichTextSectionColor(x, y, color);
+}
+
+class RichTextSectionClickable extends RichTextSection {
+  public getStyles(): string {
+    return '';
+  }
+
+  public mutateElem(elem: HTMLElement): () => void {
+    // TODO: add a css module to create stylesheets and select :hovered instead of this
+    // (but for now we're just testing adding and removing listeners)
+    const listeners: Array<[string, () => void]> = [
+      [
+        'mouseenter',
+        () => {
+          elem.classList.add('hovered');
+        },
+      ],
+      [
+        'mouseexit',
+        () => {
+          elem.classList.remove('hovered');
+        },
+      ],
+    ];
+    for (const [event, listener] of listeners) {
+      elem.addEventListener(event, listener);
+    }
+    return () => {
+      for (const [event, listener] of listeners) {
+        elem.removeEventListener(event, listener);
+      }
+    };
+  }
+}
+
+export function richTextClickable(): RichTextInstantiator {
+  return (x: number, y: number) => new RichTextSectionClickable(x, y);
 }

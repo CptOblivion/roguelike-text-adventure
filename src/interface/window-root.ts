@@ -2,10 +2,7 @@ import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
 import { CharacterWithStyle } from '../text/richtext';
 
-const ROW_STYLE = `
-display: flex;
-flex-direction: row;
-`;
+const ROW_STYLE = 'display: flex; flex-direction: row;';
 
 export class WindowRoot extends WindowBase {
   private _el: HTMLElement;
@@ -71,8 +68,13 @@ export class WindowRoot extends WindowBase {
         if (oldChar.textContent !== newChar.character) {
           oldChar.textContent = newChar.character;
         }
-        if (oldChar.style.cssText !== newChar.style) {
+        if (newChar.style != null && oldChar.style.cssText !== newChar.style) {
           oldChar.style = newChar.style;
+        }
+        for (const mutator of newChar.mutators ?? []) {
+          // TODO: store virtual DOM, call cleanup
+          // or probably better, just wipe and recreate elements when they change
+          const cleanup = mutator(oldChar);
         }
       }
     }

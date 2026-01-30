@@ -21,3 +21,8 @@ body{
 .preserve-whitespace{
   white-space: pre-wrap;
 }
+
+.hovered {
+  color: green;
+  cursor: pointer;
+}
