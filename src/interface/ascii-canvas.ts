@@ -77,7 +77,5 @@ export class ASCIICanvas {
 
   render(): CharacterWithStyle[][] {
     return this._canvas;
-    // const output = this._canvas.map((row) => row.map((char) => char.character).join('')).join('\n');
-    // return output;
   }
 }

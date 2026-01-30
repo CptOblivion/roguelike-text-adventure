@@ -2,9 +2,24 @@ export class RichText {
   private rawText: string;
   private sections: RichTextSection[];
 
-  constructor(text: string, sections: RichTextSection[] = []) {
+  private constructor(text: string, sections: RichTextSection[] = []) {
     this.rawText = text;
     this.sections = sections;
+  }
+
+  public static build(...sections: RichText[]): RichText {
+    if (sections.length === 0) {
+      return new RichText('');
+    }
+
+    return sections.reduce((previous, current) => previous.append(current), new RichText(''));
+  }
+
+  public static new(content: string, ...styles: RichTextInstantiator[]): RichText {
+    return new RichText(
+      content,
+      styles.map((instantiator) => instantiator(0, content.length)),
+    );
   }
 
   public getRawText(): string {
@@ -15,18 +30,17 @@ export class RichText {
   // truncates to substring, handles line wrapping, outputs divs split into largest possible
   // given common css and broken across lines
   public getCharacterAt(offset: number): CharacterWithStyle {
-    return new CharacterWithStyle(
-      this.rawText.charAt(offset),
-      this.sections
-        .filter((section) => section.start <= offset && section.end > offset)
-        .map((section) => section.getStyles())
-        .join(',\n'),
-    );
+    const styles = this.sections
+      .filter((section) => section.start <= offset && section.end > offset)
+      .map((section) => section.getStyles())
+      .join(' ');
+    return new CharacterWithStyle(this.rawText.charAt(offset), styles);
   }
 
   public append(text: RichText): RichText {
     // TODO: merge sections with overlap
-    return new RichText(this.rawText + text.rawText, this.sections.concat(text.sections));
+    const sections = text.sections.map((section) => section.shifted(this.rawText.length));
+    return new RichText(this.rawText + text.rawText, this.sections.concat(sections));
   }
 
   public substring(start: number, end: number = this.getLength()): RichText {
@@ -78,7 +92,7 @@ export enum RichTextColor {
   BLUE = 0x0000ff,
 }
 
-export abstract class RichTextSection {
+abstract class RichTextSection {
   public start: number;
   public end: number;
 
@@ -88,15 +102,28 @@ export abstract class RichTextSection {
   }
 
   public abstract getStyles(): string;
-}
 
-export class RichTextSectionBold extends RichTextSection {
-  public getStyles(): string {
-    return 'font-weight: bold';
+  public shifted(offset: number): this {
+    const copy = Object.assign(this);
+    copy.start += offset;
+    copy.end += offset;
+    return copy;
   }
 }
 
-export class RichTextSectionColor extends RichTextSection {
+type RichTextInstantiator = (x: number, y: number, ...args: any[]) => RichTextSection;
+
+class RichTextSectionBold extends RichTextSection {
+  public getStyles(): string {
+    return 'font-weight: bold;';
+  }
+}
+
+export function richTextBold(): RichTextInstantiator {
+  return (x: number, y: number) => new RichTextSectionBold(x, y);
+}
+
+class RichTextSectionColor extends RichTextSection {
   public color: RichTextColor;
   constructor(start: number, end: number, color: RichTextColor) {
     super(start, end);
@@ -104,6 +131,11 @@ export class RichTextSectionColor extends RichTextSection {
   }
 
   public getStyles(): string {
-    return `color: ${this.color}`;
+    debugger;
+    return `color: ${this.color};`;
   }
+}
+
+export function richTextColor(color: RichTextColor): RichTextInstantiator {
+  return (x: number, y: number) => new RichTextSectionColor(x, y, color);
 }

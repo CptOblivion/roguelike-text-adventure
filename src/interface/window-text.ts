@@ -13,7 +13,7 @@ export class WindowText extends WindowBase implements TextDisplay {
   fillDirection: FillDirection = FillDirection.topDown;
   fillDelay: number = 5;
 
-  private _text: RichText = new RichText('', []);
+  private _text: RichText = RichText.new('');
 
   private _fillOffset: number = 0;
   private _filling = false;
@@ -45,13 +45,13 @@ export class WindowText extends WindowBase implements TextDisplay {
    * @param text
    */
   addLine(text: RichText) {
-    this.addText(new RichText('\n', []).append(text));
+    this.addText(RichText.new('\n').append(text));
   }
 
   submitMessage(message: string) {
     // TODO: option to skip typing
     // TODO: make message be RichText
-    this.addLine(new RichText(message, []));
+    this.addLine(RichText.new(message));
   }
 
   private _typeText(text: RichText, delay: number) {
@@ -93,7 +93,7 @@ export class WindowText extends WindowBase implements TextDisplay {
       if (this.fillDelay !== delay) {
         clearInterval(intervalID);
         this._filling = false;
-        this._typeText(new RichText('', []), this.fillDelay);
+        this._typeText(RichText.new(''), this.fillDelay);
       }
       this.requestRedraw();
     }, delay);
@@ -129,13 +129,13 @@ export class WindowText extends WindowBase implements TextDisplay {
         const newRow = (() => {
           if (breakIndex === -1) {
             // word was longer than the width of the screen, split it with a hyphen
-            return currentRow.substring(0, this.interiorWidth - 2).append(new RichText('-'));
+            return currentRow.substring(0, this.interiorWidth - 2).append(RichText.new('-'));
           }
           return currentRow.substring(0, breakIndex);
         })();
         rows.push(newRow);
         // indent wrapped rows
-        currentRow = new RichText('  ').append(currentRow.substring(newRow.getLength() + 1));
+        currentRow = RichText.new('  ').append(currentRow.substring(newRow.getLength() + 1));
       }
       // add the remainder
       rows.push(currentRow);
