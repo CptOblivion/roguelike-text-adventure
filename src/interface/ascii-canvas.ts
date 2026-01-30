@@ -75,11 +75,9 @@ export class ASCIICanvas {
     }
   }
 
-  render(): string {
-    // TODO: redesign window-root to be a 2d array of divs
-    // that rebuilds itself on resize
-    // then render can be a blit that spits a letter into each div and updates the css
-    const output = this._canvas.map((row) => row.map((char) => char.character).join('')).join('\n');
-    return output;
+  render(): CharacterWithStyle[][] {
+    return this._canvas;
+    // const output = this._canvas.map((row) => row.map((char) => char.character).join('')).join('\n');
+    // return output;
   }
 }
