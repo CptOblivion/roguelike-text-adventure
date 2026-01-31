@@ -186,7 +186,7 @@ class RichTextSectionClickable extends RichTextSection {
         },
       ],
       [
-        'mouseexit',
+        'mouseleave',
         () => {
           elem.classList.remove('hovered');
         },
