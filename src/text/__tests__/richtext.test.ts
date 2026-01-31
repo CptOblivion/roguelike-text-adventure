@@ -1,4 +1,4 @@
-import { RichText, richTextBold, RichTextColor, richTextColor } from '../richtext';
+import { RichText, richTextBold, RichTextColor, richTextColor } from '../richText';
 
 describe('building richtext strings', () => {
   const firstSection = 'first section, ';

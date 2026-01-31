@@ -19,3 +19,6 @@ export type EventText = {
 };
 
 export type ListenerSubmitText = (ev: EventText) => any;
+
+export const EMPTY_FUNCTION = () => {};
+export type EmptyFunction = () => void;

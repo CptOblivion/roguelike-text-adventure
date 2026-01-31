@@ -9,7 +9,7 @@ import { TitlePosition, WindowBase } from './interface/window';
 import { FillDirection, WindowText } from './interface/window-text';
 import { WindowTextinput } from './interface/window-textinput';
 import { GameManager } from './game/game-manager';
-import { RichText, richTextClickable, RichTextColor, richTextColor } from './text/richtext';
+import { RichText, richTextClickable, RichTextColor, richTextColor } from './text/richText';
 
 function main() {
   const docMain = document.getElementById('main');

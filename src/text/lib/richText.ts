@@ -1,0 +1,97 @@
+import * as Sections from './richTextSections';
+import * as Common from './common';
+import * as characterWithAtts from './characterWithStyle';
+
+export class RichText {
+  private rawText: string;
+  private sections: Sections.RichTextSection[];
+
+  private constructor(text: string, sections: Sections.RichTextSection[] = []) {
+    this.rawText = text;
+    this.sections = sections;
+  }
+
+  public static build(...sections: RichText[]): RichText {
+    if (sections.length === 0) {
+      return new RichText('');
+    }
+
+    return sections.reduce((previous, current) => previous.append(current), new RichText(''));
+  }
+
+  public static new(content: string, ...styles: Sections.RichTextInstantiator[]): RichText {
+    return new RichText(
+      content,
+      styles.map((instantiator) => instantiator(0, content.length)),
+    );
+  }
+
+  public getRawText(): string {
+    return this.rawText;
+  }
+
+  // TODO: replace with a render(maxLineLength: ?number, substring: [number, ?number]),
+  // truncates to substring, handles line wrapping (maybe?), outputs divs split into largest possible
+  // given common css and broken across lines
+  public getCharacterAt(offset: number): characterWithAtts.CharacterWithStyle {
+    const sections = this.sections.filter(
+      (section) => section.start <= offset && section.end > offset,
+    );
+    const styles = sections.map((section) => section.getStyles()).join(' ');
+
+    const mutators = this.sections
+      .map((section) => section.mutateElem)
+      .filter((mutator) => mutator != null);
+    return new characterWithAtts.CharacterWithStyle(this.rawText.charAt(offset), styles, mutators);
+  }
+
+  public append(text: RichText): RichText {
+    // TODO: merge sections with overlap
+    const sections = text.sections.map((section) => section.shifted(this.rawText.length));
+    return new RichText(this.rawText + text.rawText, this.sections.concat(sections));
+  }
+
+  public substring(start: number, end: number = this.getLength()): RichText {
+    return new RichText(
+      this.rawText.substring(start, end),
+      // TODO: test this doesn't clip incorrectly
+      this.sections
+        // only keep styles that overlap this substring
+        .filter((section) => section.end > start && section.start <= end)
+        .map((section) => {
+          const newSection = section.shifted(-start);
+
+          // styles shouldn't extend outside the string (or they'll risk bleeding into other text)
+          if (newSection.start < 0) {
+            newSection.start = 0;
+          }
+
+          if (newSection.end >= end - start) {
+            newSection.end = end - start;
+          }
+          return newSection;
+        }),
+    );
+  }
+
+  public getLength(): number {
+    return this.rawText.length;
+  }
+
+  public rows(): RichText[] {
+    let offset = 0;
+    const rows: RichText[] = [];
+    let nextLine = this.rawText.indexOf('\n', offset);
+    while (nextLine >= 0) {
+      rows.push(this.substring(offset, nextLine));
+      offset = nextLine + 1;
+      nextLine = this.rawText.indexOf('\n', offset);
+    }
+    rows.push(this.substring(offset));
+    return rows;
+  }
+
+  public lastIndexOf(searchString: string, position?: number): number {
+    return this.rawText.lastIndexOf(searchString, position);
+  }
+}

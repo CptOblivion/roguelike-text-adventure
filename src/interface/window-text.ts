@@ -1,7 +1,7 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
 import { TextDisplay } from '../common';
-import { RichText } from '../text/richtext';
+import { RichText } from '../text/richText';
 
 export enum FillDirection {
   topDown = 0,

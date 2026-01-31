@@ -1,6 +1,6 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
-import { CharacterWithStyle } from '../text/richtext';
+import { CharacterWithStyle } from '../text/richText';
 
 const ROW_STYLE = 'display: flex; flex-direction: row;';
 

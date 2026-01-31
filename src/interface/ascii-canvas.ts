@@ -1,5 +1,5 @@
 import { Position } from '../common';
-import { CharacterWithStyle, RichText } from '../text/richtext';
+import { CharacterWithStyle, RichText } from '../text/richText';
 
 export class ASCIICanvas {
   width: number = 0;
