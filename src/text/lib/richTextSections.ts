@@ -1,5 +1,7 @@
 import { EMPTY_FUNCTION, EmptyFunction } from '../../common';
 
+export type RichTextInstantiator = (x: number, y: number, ...args: any[]) => RichTextSection;
+
 export abstract class RichTextSection {
   public start: number;
   public end: number;
@@ -24,15 +26,23 @@ export abstract class RichTextSection {
   }
 }
 
-export type RichTextInstantiator = (x: number, y: number, ...args: any[]) => RichTextSection;
+export enum RichTextColor {
+  RED = '#ff5454',
+  GREEN = '#00ff00',
+  BLUE = '#0000ff',
+}
 
-export class RichTextSectionBold extends RichTextSection {
+class RichTextSectionBold extends RichTextSection {
   public getStyles(): string {
     return 'font-weight: bold;';
   }
 }
 
-export class RichTextSectionColor extends RichTextSection {
+export function richTextBold(): RichTextInstantiator {
+  return (x: number, y: number) => new RichTextSectionBold(x, y);
+}
+
+class RichTextSectionColor extends RichTextSection {
   public color: RichTextColor;
   constructor(start: number, end: number, color: RichTextColor) {
     super(start, end);
@@ -44,7 +54,11 @@ export class RichTextSectionColor extends RichTextSection {
   }
 }
 
-export class RichTextSectionClickable extends RichTextSection {
+export function richTextColor(color: RichTextColor): RichTextInstantiator {
+  return (x: number, y: number) => new RichTextSectionColor(x, y, color);
+}
+
+class RichTextSectionClickable extends RichTextSection {
   public getStyles(): string {
     return '';
   }
@@ -77,20 +91,6 @@ export class RichTextSectionClickable extends RichTextSection {
       }
     };
   }
-}
-
-export enum RichTextColor {
-  RED = '#ff5454',
-  GREEN = '#00ff00',
-  BLUE = '#0000ff',
-}
-
-export function richTextBold(): RichTextInstantiator {
-  return (x: number, y: number) => new RichTextSectionBold(x, y);
-}
-
-export function richTextColor(color: RichTextColor): RichTextInstantiator {
-  return (x: number, y: number) => new RichTextSectionColor(x, y, color);
 }
 
 export function richTextClickable(): RichTextInstantiator {
