@@ -27,7 +27,7 @@ describe('event manager', () => {
     cb2Count = 0;
   });
 
-  test('events can be added', () => {
+  test('events can be added and called', () => {
     const spy = new Spy();
     EventManager.registerElement(spy, new Position(0, 0));
 
@@ -38,7 +38,7 @@ describe('event manager', () => {
     expect(cb2Count).toBe(1);
   });
 
-  test('events can be removed', () => {
+  test('events can be removed and are no longer called', () => {
     const spy = new Spy();
     EventManager.registerElement(spy, new Position(0, 0));
 
@@ -51,7 +51,7 @@ describe('event manager', () => {
     expect(cb2Count).toBe(0);
   });
 
-  test('duplicate events can be added', () => {
+  test('duplicate events can be added and each instance is called', () => {
     const spy = new Spy();
     EventManager.registerElement(spy, new Position(0, 0));
 
@@ -63,7 +63,7 @@ describe('event manager', () => {
     expect(cb1Count).toBe(2);
   });
 
-  test('duplicate events can be removed', () => {
+  test('when an event with duplicates is removed, every instance is removed', () => {
     const spy = new Spy();
     EventManager.registerElement(spy, new Position(0, 0));
 
