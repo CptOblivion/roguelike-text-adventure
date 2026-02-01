@@ -1,3 +1,4 @@
+import { Box, EventManager, EventType } from '../../events/events';
 import {
   RichTextInstantiatorArgs,
   IRichText,
@@ -38,11 +39,34 @@ export function richTextColor(color: RichTextColor): RichTextInstantiator {
 }
 
 class RichTextSectionHover extends RichTextSection {
+  private hovered: boolean = false;
+
+  constructor(args: RichTextInstantiatorArgs) {
+    super(args);
+    EventManager.addListener(
+      EventType.MouseEnter,
+      () => {
+        this.hovered = true;
+        console.log(this.parent);
+        this.parent.redraw();
+      },
+      new Box(1, 1, 2, 2),
+    );
+    EventManager.addListener(
+      EventType.MouseLeave,
+      () => {
+        this.hovered = false;
+      },
+      new Box(1, 1, 2, 2),
+    );
+  }
+
   public getStyles(): string {
-    return '';
+    console.log('style', this);
+    return this.hovered ? `color: ${RichTextColor.GREEN}; cursor: pointer;` : '';
   }
 }
 
-export function richTextSectionHover(): RichTextInstantiator {
+export function richTextHover(): RichTextInstantiator {
   return (args: RichTextInstantiatorArgs) => new RichTextSectionHover(args);
 }

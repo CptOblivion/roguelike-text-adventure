@@ -1,4 +1,6 @@
-export interface IRichText {}
+export interface IRichText {
+  redraw(): void;
+}
 
 // bundled into an array so subclasses can use construction args without having to be aware of common args
 export type RichTextInstantiatorArgs = [x: number, y: number, parent: IRichText];
@@ -13,6 +15,7 @@ export abstract class RichTextSection {
   constructor([start, end, parent]: [number, number, IRichText]) {
     this.start = start;
     this.end = end;
+    this.parent = parent;
   }
 
   public abstract getStyles(): string;

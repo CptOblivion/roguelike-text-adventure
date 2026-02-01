@@ -4,7 +4,7 @@ export class Box {
   left: number;
   right: number;
 
-  constructor(top: number, bottom: number, left: number, right: number) {
+  constructor(left: number, top: number, right: number, bottom: number) {
     this.top = top;
     this.bottom = bottom;
     this.left = left;

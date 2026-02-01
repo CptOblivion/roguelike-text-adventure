@@ -1,7 +1,7 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
 import { CharacterWithStyle } from '../text/richText';
-import { EventManager, Position } from './events';
+import { EventManager, Position } from '../events/events';
 
 const ROW_STYLE = 'display: flex; flex-direction: row;';
 

@@ -5,8 +5,9 @@ export class RichText implements IRichText {
   private rawText: string;
   private sections: RichTextSection[];
 
-  private constructor(text: string, sections: RichTextSection[] = []) {
+  private constructor(text: string, styles?: RichTextInstantiator[]) {
     this.rawText = text;
+    const sections = styles?.map((instantiator) => instantiator([0, text.length, this])) ?? [];
     this.sections = sections;
   }
 
@@ -19,10 +20,12 @@ export class RichText implements IRichText {
   }
 
   public static new(content: string, ...styles: RichTextInstantiator[]): RichText {
-    return new RichText(
-      content,
-      styles.map((instantiator) => instantiator([0, content.length, this])),
-    );
+    return new RichText(content, styles);
+  }
+
+  public redraw(): void {
+    console.log('requesting redraw');
+    // TODO: actually trigger redraw
   }
 
   public getRawText(): string {
