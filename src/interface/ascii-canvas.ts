@@ -27,8 +27,8 @@ export class ASCIICanvas {
     return true;
   }
 
-  getAt(x: number, y: number): CharacterWithStyle {
-    if (!this.checkBounds([x, y])) return undefined;
+  getAt(x: number, y: number): CharacterWithStyle | null {
+    if (!this.checkBounds([x, y])) return null;
     return this._canvas[y][x];
   }
 
@@ -58,10 +58,21 @@ export class ASCIICanvas {
     }
 
     for (let srcX = 0, x = position[0]; srcX < srcGrid.width && x <= this.width; srcX++, x++) {
-      if (x < 0) continue;
+      if (x < 0) {
+        continue;
+      }
+
       for (let srcY = 0, y = position[1]; srcY < srcGrid.height && y < this.height; srcY++, y++) {
-        if (y < 0) continue;
-        this.setAt(srcGrid.getAt(srcX, srcY), [x, y]);
+        if (y < 0) {
+          continue;
+        }
+
+        const char = srcGrid.getAt(srcX, srcY);
+        if (char == null) {
+          continue;
+        }
+
+        this.setAt(char, [x, y]);
       }
     }
   }

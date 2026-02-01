@@ -15,6 +15,9 @@ import { EventManager } from './events/events';
 function main() {
   const docMain = document.getElementById('main');
   setDarkMode(true);
+  if (docMain == null) {
+    throw new Error('failed to find main element');
+  }
   docMain.innerHTML = 'loading...';
 
   buildWindow(docMain);

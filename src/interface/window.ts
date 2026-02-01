@@ -116,11 +116,12 @@ export class WindowBase {
   resize(width: number, height: number): boolean {
     width = Math.floor(width);
     height = Math.floor(height);
-    if (this.width == width && this.height == height) return;
+    if (this.width == width && this.height == height) return false;
     this.width = width;
     this.height = height;
     this._canvas.resize(this.width, this.height);
     this.changed = true;
+    return true;
   }
 
   private _fillBorder() {
@@ -187,7 +188,7 @@ export class WindowBase {
 
     const sizes = this._negotiateChildrenSize();
     let contentPos = this.contentStart;
-    const promises = [];
+    const promises: Promise<any>[] = [];
     // TODO: async the children
     if (this.contentDirection) {
       // vertical

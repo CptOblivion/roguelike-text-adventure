@@ -1,19 +1,20 @@
 import { RichTextSectionInstantiator, RichTextSection, IRichText } from './richTextCommon';
 import { CharacterWithStyle } from './characterWithStyle';
+import { nullThrows } from '../../common';
 
-export type RichTextInstantiator = (parent: RichText | undefined) => RichText;
+export type RichTextInstantiator = (parent: RichText | null) => RichText;
 
 export function richText(
   content: string | RichTextInstantiator[],
   styles?: RichTextSectionInstantiator[],
 ): RichTextInstantiator {
-  return (parent: RichText | undefined) => new RichText(parent, content, styles);
+  return (parent: RichText | null) => new RichText(parent, content, styles);
 }
 
 export class RichText implements IRichText {
   private rawText: string;
   private styles: RichTextSection[];
-  private parent: RichText;
+  private parent: RichText | null;
   private children: RichText[] = [];
 
   private hasChildren(): boolean {
@@ -25,7 +26,7 @@ export class RichText implements IRichText {
   }
 
   public constructor(
-    parent: RichText | undefined,
+    parent: RichText | null,
     content: string | RichTextInstantiator[],
     styles?: RichTextSectionInstantiator[],
   ) {
@@ -54,7 +55,7 @@ export class RichText implements IRichText {
 
   // TODO: delete this, render should return a virtual dom tree
   // then the window can diff the virtual dom and make changes to the real dom
-  private renderAtIndex(index: number): CharacterWithStyle {
+  private renderAtIndex(index: number): CharacterWithStyle | null {
     if (index < 0 || index >= this.length) {
       return null;
     }
@@ -67,18 +68,21 @@ export class RichText implements IRichText {
     let offset = 0;
     for (const child of this.children) {
       if (index + child.length >= index) {
-        const out = child.renderAtIndex(index - offset);
+        const out = nullThrows(child.renderAtIndex(index - offset));
         out.style = this.styles + out.style;
         return out;
       }
     }
+
+    // shouldn't be possible to get here, so make noise if we do
+    throw new Error(`Failed to find child at index ${index}`);
   }
 
   // TODO: get rid of renderAtIndex and characterWithStyle, replace with virtual dom element
   public render(
     start: number = 0,
     end: number = this.length,
-    maxLineLength: number = null,
+    maxLineLength: number | null = null,
   ): CharacterWithStyle[][] {
     // TODO: handle line wrap
     const output: CharacterWithStyle[][] = [];
@@ -88,7 +92,7 @@ export class RichText implements IRichText {
     const len = Math.max(start, Math.min(end, this.length));
 
     for (let i = offs; i < len; i++) {
-      const char = this.renderAtIndex(i);
+      const char = nullThrows(this.renderAtIndex(i));
       if (char.character === '\n') {
         output.push(...wrapText(row, maxLineLength));
         row = [];
@@ -115,7 +119,10 @@ export class RichText implements IRichText {
 
 const NEW_ROW_PREFIX = [new CharacterWithStyle(' ', ''), new CharacterWithStyle(' ', '')];
 
-function wrapText(text: CharacterWithStyle[], lineLength: number): CharacterWithStyle[][] {
+function wrapText(text: CharacterWithStyle[], lineLength: number | null): CharacterWithStyle[][] {
+  if (lineLength == null) {
+    return [text];
+  }
   const rows: CharacterWithStyle[][] = [];
 
   while (text.length > lineLength - 1) {
@@ -130,7 +137,7 @@ function wrapText(text: CharacterWithStyle[], lineLength: number): CharacterWith
       const row = text.slice(0, lineLength - NEW_ROW_PREFIX.length);
       text
         // TODO: find a better solution than arbitrarily taking the style of the character to the left
-        .push(new CharacterWithStyle('-', text[lineLength - NEW_ROW_PREFIX.length - 1].style));
+        .push(new CharacterWithStyle('-', row[row.length - 1].style));
       return row;
     })();
 

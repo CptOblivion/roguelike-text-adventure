@@ -34,7 +34,9 @@ class Matcher {
 
   match(input: string): ActionParsed | string | null {
     const result = this.regex.exec(input);
-    if (result === null) return null;
+
+    if (result == null || result.groups == null) return null;
+
     return this.action(result.groups);
   }
 }
