@@ -2,7 +2,7 @@ export {
   RichTextColor,
   richTextBold,
   richTextColor,
-  richTextClickable,
+  richTextSectionHover as richTextClickable,
 } from './lib/richTextSections';
 
 export { CharacterWithStyle } from './lib/characterWithStyle';

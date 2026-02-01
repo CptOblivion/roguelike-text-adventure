@@ -10,6 +10,7 @@ import { FillDirection, WindowText } from './interface/window-text';
 import { WindowTextinput } from './interface/window-textinput';
 import { GameManager } from './game/game-manager';
 import { RichText, richTextClickable, RichTextColor, richTextColor } from './text/richText';
+import { EventManager } from './interface/events';
 
 function main() {
   const docMain = document.getElementById('main');
@@ -20,6 +21,7 @@ function main() {
 }
 
 function buildWindow(el = document.body) {
+  EventManager.initialize();
   const windowRoot = new WindowRoot(el);
   windowRoot.title = ' DEFINITELY A REAL GAME ';
   windowRoot.borders = BORDER_DOUBLE;

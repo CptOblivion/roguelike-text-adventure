@@ -1,6 +1,7 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
 import { CharacterWithStyle } from '../text/richText';
+import { EventManager, Position } from './events';
 
 const ROW_STYLE = 'display: flex; flex-direction: row;';
 
@@ -47,6 +48,7 @@ export class WindowRoot extends WindowBase {
       children.push(row);
       for (let x = 0; x < width; x++) {
         const char = document.createElement('div');
+        EventManager.registerElement(char, new Position(x, y));
         char.textContent = ' ';
         row.append(char);
       }
@@ -70,11 +72,6 @@ export class WindowRoot extends WindowBase {
         }
         if (newChar.style != null && oldChar.style.cssText !== newChar.style) {
           oldChar.style = newChar.style;
-        }
-        for (const mutator of newChar.mutators ?? []) {
-          // TODO: store virtual DOM, call cleanup
-          // or probably better, just wipe and recreate elements when they change
-          const cleanup = mutator(oldChar);
         }
       }
     }
