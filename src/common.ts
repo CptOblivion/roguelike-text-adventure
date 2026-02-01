@@ -1,7 +1,7 @@
 export type Position = [number, number];
 
 export interface TextDisplay {
-  submitMessage(message: string);
+  submitMessageString(message: string);
 }
 
 // TODO: do we want to prevent accidental truthy checks on this somehow? (EG @typescript-eslint/strict-boolean-expressions )

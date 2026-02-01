@@ -1,20 +1,19 @@
 export interface IRichText {
   redraw(): void;
+  update(): void;
 }
 
 // bundled into an array so subclasses can use construction args without having to be aware of common args
-export type RichTextInstantiatorArgs = [x: number, y: number, parent: IRichText];
+export type RichTextSectionInstantiatorArgs = [parent: IRichText];
 
-export type RichTextInstantiator = (args: RichTextInstantiatorArgs) => RichTextSection;
+export type RichTextSectionInstantiator = (
+  args: RichTextSectionInstantiatorArgs,
+) => RichTextSection;
 
 export abstract class RichTextSection {
-  public start: number;
-  public end: number;
   public parent: IRichText;
 
-  constructor([start, end, parent]: [number, number, IRichText]) {
-    this.start = start;
-    this.end = end;
+  constructor([parent]: [IRichText]) {
     this.parent = parent;
   }
 

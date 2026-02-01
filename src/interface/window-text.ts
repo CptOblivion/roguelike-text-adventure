@@ -1,7 +1,7 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
 import { TextDisplay } from '../common';
-import { RichText } from '../text/richText';
+import { richText, RichText, RichTextInstantiator } from '../text/richText';
 
 export enum FillDirection {
   topDown = 0,
@@ -13,7 +13,7 @@ export class WindowText extends WindowBase implements TextDisplay {
   fillDirection: FillDirection = FillDirection.topDown;
   fillDelay: number = 5;
 
-  private _text: RichText = RichText.new('');
+  private messages: RichText[] = [];
 
   private _fillOffset: number = 0;
   private _filling = false;
@@ -23,20 +23,11 @@ export class WindowText extends WindowBase implements TextDisplay {
    * ignores fillDelay
    * @param text
    */
-  setText(text: RichText) {
+  setText(text: RichText[]) {
     // TODO: word wrap
-    this._text = text;
+    this.messages = text;
     this.changed = true;
     this.requestRedraw();
-  }
-
-  /**
-   * appends text
-   * does not begin on a new line
-   * @param text
-   */
-  addText(text: RichText) {
-    this._typeText(text, this.fillDelay);
   }
 
   /**
@@ -44,26 +35,29 @@ export class WindowText extends WindowBase implements TextDisplay {
    * begins on a new line
    * @param text
    */
-  addLine(text: RichText) {
-    this.addText(RichText.new('\n').append(text));
+  addMessage(text: RichTextInstantiator) {
+    this.typeMessage(text, this.fillDelay);
   }
 
-  submitMessage(message: string) {
+  // TODO: remove
+  submitMessageString(message: string) {
     // TODO: option to skip typing
     // TODO: make message be RichText
-    this.addLine(RichText.new(message));
+    this.addMessage(richText(message));
   }
 
-  private _typeText(text: RichText, delay: number) {
+  private typeMessage(text: RichTextInstantiator, delay: number) {
     if (!this._filling) {
       // we don't want to set this if we're already in the middle of typing some older text
-      this._fillOffset = this._text.getLength();
+      this._fillOffset = this.messages.length;
     }
 
-    this.setText(this._text.append(text));
+    const message = text(null);
+
+    this.setText(this.messages.concat([message]));
 
     if (delay == 0) {
-      this._fillOffset = this._text.getLength();
+      this._fillOffset = this.messages.length;
       return;
     }
 
@@ -84,8 +78,8 @@ export class WindowText extends WindowBase implements TextDisplay {
       }
 
       this._fillOffset += numChars;
-      if (this._fillOffset >= this._text.getLength()) {
-        this._fillOffset = this._text.getLength();
+      if (this._fillOffset >= this.messages.length) {
+        this._fillOffset = this.messages.length;
         clearInterval(intervalID);
         this._filling = false;
       }
@@ -93,7 +87,7 @@ export class WindowText extends WindowBase implements TextDisplay {
       if (this.fillDelay !== delay) {
         clearInterval(intervalID);
         this._filling = false;
-        this._typeText(RichText.new(''), this.fillDelay);
+        this.typeMessage(richText(''), this.fillDelay);
       }
       this.requestRedraw();
     }, delay);
@@ -103,44 +97,21 @@ export class WindowText extends WindowBase implements TextDisplay {
     await this._canvas.clear();
     super._update();
 
-    const wrappedText = this.wrapText(this._text.substring(0, this._fillOffset));
+    const rendered = this.messages.map((message) =>
+      message.render(0, this._fillOffset, this.interiorWidth),
+    );
 
     if (this.fillDirection === FillDirection.topDown) {
-      for (let i = 0; i < wrappedText.length; i++) {
-        const row = wrappedText[i];
+      for (let i = 0; i < rendered.length; i++) {
+        const row = rendered[i];
         this._canvas.writeRichText(row, [this.indexLeft, this.indexTop + i]);
       }
     } else {
-      for (let i = 0; i < wrappedText.length; i++) {
-        const row = wrappedText[wrappedText.length - 1 - i];
+      for (let i = 0; i < rendered.length; i++) {
+        const row = rendered[rendered.length - 1 - i];
         this._canvas.writeRichText(row, [this.indexLeft, this.indexBottom - i]);
       }
     }
     return this._canvas;
-  }
-
-  private wrapText(text: RichText): RichText[] {
-    const rows = [];
-
-    for (const row of text.rows()) {
-      let currentRow = row;
-      while (currentRow.getLength() > this.interiorWidth) {
-        // find the last space before the screen breaks
-        const breakIndex = currentRow.lastIndexOf(' ', this.interiorWidth);
-        const newRow = (() => {
-          if (breakIndex === -1) {
-            // word was longer than the width of the screen, split it with a hyphen
-            return currentRow.substring(0, this.interiorWidth - 2).append(RichText.new('-'));
-          }
-          return currentRow.substring(0, breakIndex);
-        })();
-        rows.push(newRow);
-        // indent wrapped rows
-        currentRow = RichText.new('  ').append(currentRow.substring(newRow.getLength() + 1));
-      }
-      // add the remainder
-      rows.push(currentRow);
-    }
-    return rows;
   }
 }

@@ -1,52 +1,43 @@
-import { RichTextInstantiator, RichTextSection, IRichText } from './richTextCommon';
+import { RichTextSectionInstantiator, RichTextSection, IRichText } from './richTextCommon';
 import { CharacterWithStyle } from './characterWithStyle';
 
-function sum(a, b): number {
-  return a + b;
+export type RichTextInstantiator = (parent: RichText | undefined) => RichText;
+
+export function richText(
+  content: string | RichTextInstantiator[],
+  styles?: RichTextSectionInstantiator[],
+): RichTextInstantiator {
+  return (parent: RichText | undefined) => new RichText(parent, content, styles);
 }
 
-/**
- * REFACTOR:
- *  * new should take either a string or an array of text objects, and a list of style instantiators
- *  *
- */
-
 export class RichText implements IRichText {
-  private text?: string;
-  private sections: RichTextSection[];
+  private rawText: string;
+  private styles: RichTextSection[];
+  private parent: RichText;
   private children: RichText[] = [];
 
-  // private _length: number;
+  private hasChildren(): boolean {
+    return this.children != null && this.children.length !== 0;
+  }
+
   public get length(): number {
-    // TODO: calcualte at instantiation, and if a child changes it should bubble up and store the result
-    // return this._length;
-    if (this.children.length === 0) {
-      return this.text.length;
-    }
-    return this.children.map((child) => child.length).reduce(sum, 0);
+    return this.rawText.length;
   }
 
-  private constructor(content: string | RichText[], styles?: RichTextInstantiator[]) {
+  public constructor(
+    parent: RichText | undefined,
+    content: string | RichTextInstantiator[],
+    styles?: RichTextSectionInstantiator[],
+  ) {
+    this.styles = styles?.map((instantiator) => instantiator([this])) ?? [];
+    this.parent = parent;
+
     if (typeof content === 'string') {
-      this.text = content;
+      this.rawText = content;
     } else {
-      this.children = content;
+      this.children = (content as RichTextInstantiator[]).map((instantiator) => instantiator(this));
+      this.update();
     }
-
-    const sections = styles?.map((instantiator) => instantiator([0, content.length, this])) ?? [];
-    this.sections = sections;
-  }
-
-  public static build(...sections: RichText[]): RichText {
-    if (sections.length === 0) {
-      return new RichText('');
-    }
-
-    return sections.reduce((previous, current) => previous.append(current), new RichText(''));
-  }
-
-  public static new(content: string | RichText[], ...styles: RichTextInstantiator[]): RichText {
-    return new RichText(content, styles);
   }
 
   public redraw(): void {
@@ -55,71 +46,114 @@ export class RichText implements IRichText {
   }
 
   public getRawText(): string {
-    if (this.children.length === 0) {
-      return this.text;
+    if (!this.hasChildren()) {
+      return this.rawText;
     }
     return this.children.map((child) => child.getRawText()).join('');
   }
 
-  // TODO: replace with a render(maxLineLength: ?number, substring: [number, ?number]),
-  // TODO: handle line wrap in render
-  public getCharacterAt(offset: number): CharacterWithStyle {
-    const sections = this.sections.filter(
-      (section) => section.start <= offset && section.end > offset,
-    );
-    const styles = sections.map((section) => section.getStyles()).join(' ');
-
-    if (this.children.length === 0) {
-      return new CharacterWithStyle(this.text.charAt(offset), styles);
+  // TODO: delete this, render should return a virtual dom tree
+  // then the window can diff the virtual dom and make changes to the real dom
+  private renderAtIndex(index: number): CharacterWithStyle {
+    if (index < 0 || index >= this.length) {
+      return null;
     }
 
-    // traverse children, to find the character at the index we're looking for
-    throw new Error('not yet implemented');
-  }
+    const styles = this.styles.map((section) => section.getStyles()).join(' ');
+    if (!this.hasChildren()) {
+      return new CharacterWithStyle(this.rawText.charAt(index), styles);
+    }
 
-  // MARKED FOR DELETION
-  public append(text: RichText): RichText {
-    // TODO: merge sections with overlap
-    const sections = text.sections.map((section) => section.shifted(this.length));
-    return new RichText(this.getRawText() + text.getRawText(), this.sections.concat(sections));
-  }
-
-  public substring(start: number, end: number = this.length): RichText {
-    return new RichText(
-      this.getRawText().substring(start, end),
-      this.sections
-        // only keep styles that overlap this substring
-        .filter((section) => section.end > start && section.start <= end)
-        .map((section) => {
-          const newSection = section.shifted(-start);
-
-          // styles shouldn't extend outside the string (or they'll risk bleeding into other text)
-          if (newSection.start < 0) {
-            newSection.start = 0;
-          }
-
-          if (newSection.end >= end - start) {
-            newSection.end = end - start;
-          }
-          return newSection;
-        }),
-    );
-  }
-
-  public rows(): RichText[] {
     let offset = 0;
-    const rows: RichText[] = [];
-    let nextLine = this.getRawText().indexOf('\n', offset);
-    while (nextLine >= 0) {
-      rows.push(this.substring(offset, nextLine));
-      offset = nextLine + 1;
-      nextLine = this.getRawText().indexOf('\n', offset);
+    for (const child of this.children) {
+      if (index + child.length >= index) {
+        const out = child.renderAtIndex(index - offset);
+        out.style = this.styles + out.style;
+        return out;
+      }
     }
-    rows.push(this.substring(offset));
-    return rows;
+  }
+
+  // TODO: get rid of renderAtIndex and characterWithStyle, replace with virtual dom element
+  public render(
+    start: number = 0,
+    end: number = this.length,
+    maxLineLength: number = null,
+  ): CharacterWithStyle[][] {
+    // TODO: handle line wrap
+    const output: CharacterWithStyle[][] = [];
+    let row: CharacterWithStyle[] = [];
+
+    const offs = Math.max(0, start, Math.min(end, this.length));
+    const len = Math.max(start, Math.min(end, this.length));
+
+    for (let i = offs; i < len; i++) {
+      const char = this.renderAtIndex(i);
+      if (char.character === '\n') {
+        output.push(...wrapText(row, maxLineLength));
+        row = [];
+        continue;
+      }
+
+      row.push(char);
+    }
+
+    output.push(...wrapText(row, maxLineLength));
+
+    return output;
+  }
+
+  update(): void {
+    this.rawText = this.children.map((child) => child.getRawText()).join('');
+    this.parent?.update();
   }
 
   public lastIndexOf(searchString: string, position?: number): number {
     return this.getRawText().lastIndexOf(searchString, position);
   }
+}
+
+const NEW_ROW_PREFIX = [new CharacterWithStyle(' ', ''), new CharacterWithStyle(' ', '')];
+
+function wrapText(text: CharacterWithStyle[], lineLength: number): CharacterWithStyle[][] {
+  const rows: CharacterWithStyle[][] = [];
+
+  while (text.length > lineLength - 1) {
+    // find the last space before the screen breaks
+    const breakIndex = lastIndexOf(text, (elem) => elem.character === ' ', lineLength - 1);
+    const newRow = (() => {
+      if (breakIndex !== -1) {
+        return text.slice(0, breakIndex);
+      }
+
+      // word was longer than the width of the screen, split it with a hyphen
+      const row = text.slice(0, lineLength - NEW_ROW_PREFIX.length);
+      text
+        // TODO: find a better solution than arbitrarily taking the style of the character to the left
+        .push(new CharacterWithStyle('-', text[lineLength - NEW_ROW_PREFIX.length - 1].style));
+      return row;
+    })();
+
+    rows.push(newRow);
+    // indent wrapped rows
+    text = NEW_ROW_PREFIX.concat(text.slice(newRow.length + 1));
+  }
+
+  // add the remainder
+  rows.push(text);
+  return rows;
+}
+
+function lastIndexOf<T>(
+  arr: T[],
+  matcher: (elem: T) => boolean,
+  startIndex: number = arr.length - 1,
+): number {
+  for (let i = startIndex; i >= 0; i--) {
+    if (matcher(arr[i])) {
+      return i;
+    }
+  }
+  // not found
+  return -1;
 }

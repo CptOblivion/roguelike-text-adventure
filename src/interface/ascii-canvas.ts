@@ -1,5 +1,5 @@
 import { Position } from '../common';
-import { CharacterWithStyle, RichText } from '../text/richText';
+import { CharacterWithStyle, RichText, RichTextInstantiator } from '../text/richText';
 
 export class ASCIICanvas {
   width: number = 0;
@@ -66,11 +66,10 @@ export class ASCIICanvas {
     }
   }
 
-  writeRichText(src: RichText, [x, y]: Position) {
-    const rows = src.rows();
+  writeRichText(rows: CharacterWithStyle[][], [x, y]: Position) {
     for (let offsY = 0; offsY < rows.length; offsY++) {
       for (let offsX = 0; offsX < rows[offsY].length; offsX++) {
-        this.setAt(rows[offsY].getCharacterAt(offsX), [x + offsX, y + offsY]);
+        this.setAt(rows[offsY][offsX], [x + offsX, y + offsY]);
       }
     }
   }

@@ -1,8 +1,7 @@
 import { Box, EventManager, EventType } from '../../events/events';
 import {
-  RichTextInstantiatorArgs,
-  IRichText,
-  RichTextInstantiator,
+  RichTextSectionInstantiatorArgs,
+  RichTextSectionInstantiator,
   RichTextSection,
 } from './richTextCommon';
 
@@ -18,13 +17,13 @@ class RichTextSectionBold extends RichTextSection {
   }
 }
 
-export function richTextBold(): RichTextInstantiator {
-  return (args: RichTextInstantiatorArgs) => new RichTextSectionBold(args);
+export function richTextBold(): RichTextSectionInstantiator {
+  return (args: RichTextSectionInstantiatorArgs) => new RichTextSectionBold(args);
 }
 
 class RichTextSectionColor extends RichTextSection {
   public color: RichTextColor;
-  constructor(args: RichTextInstantiatorArgs, color: RichTextColor) {
+  constructor(args: RichTextSectionInstantiatorArgs, color: RichTextColor) {
     super(args);
     this.color = color;
   }
@@ -34,14 +33,14 @@ class RichTextSectionColor extends RichTextSection {
   }
 }
 
-export function richTextColor(color: RichTextColor): RichTextInstantiator {
-  return (args: RichTextInstantiatorArgs) => new RichTextSectionColor(args, color);
+export function richTextColor(color: RichTextColor): RichTextSectionInstantiator {
+  return (args: RichTextSectionInstantiatorArgs) => new RichTextSectionColor(args, color);
 }
 
 class RichTextSectionHover extends RichTextSection {
   private hovered: boolean = false;
 
-  constructor(args: RichTextInstantiatorArgs) {
+  constructor(args: RichTextSectionInstantiatorArgs) {
     super(args);
     EventManager.addListener(
       EventType.MouseEnter,
@@ -50,14 +49,14 @@ class RichTextSectionHover extends RichTextSection {
         console.log(this.parent);
         this.parent.redraw();
       },
-      new Box(1, 1, 2, 2),
+      new Box(1, 1, 10, 10),
     );
     EventManager.addListener(
       EventType.MouseLeave,
       () => {
         this.hovered = false;
       },
-      new Box(1, 1, 2, 2),
+      new Box(1, 1, 10, 10),
     );
   }
 
@@ -67,6 +66,6 @@ class RichTextSectionHover extends RichTextSection {
   }
 }
 
-export function richTextHover(): RichTextInstantiator {
-  return (args: RichTextInstantiatorArgs) => new RichTextSectionHover(args);
+export function richTextHover(): RichTextSectionInstantiator {
+  return (args: RichTextSectionInstantiatorArgs) => new RichTextSectionHover(args);
 }

@@ -2,4 +2,4 @@ export { RichTextColor, richTextBold, richTextColor, richTextHover } from './lib
 
 export { CharacterWithStyle } from './lib/characterWithStyle';
 
-export { RichText } from './lib/richText';
+export { RichText, richText, RichTextInstantiator } from './lib/richText';

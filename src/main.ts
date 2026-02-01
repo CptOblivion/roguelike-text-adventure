@@ -9,7 +9,7 @@ import { TitlePosition, WindowBase } from './interface/window';
 import { FillDirection, WindowText } from './interface/window-text';
 import { WindowTextinput } from './interface/window-textinput';
 import { GameManager } from './game/game-manager';
-import { RichText, richTextHover, RichTextColor, richTextColor } from './text/richText';
+import { RichText, richTextHover, RichTextColor, richTextColor, richText } from './text/richText';
 import { EventManager } from './events/events';
 
 function main() {
@@ -33,18 +33,18 @@ function buildWindow(el = document.body) {
 
   const textLog = new WindowText('text_log');
   textLog.padding = PADDING_EVEN;
-  textLog.addText(
-    RichText.build(
-      RichText.new(
+  textLog.addMessage(
+    richText([
+      richText(
         'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty ',
       ),
-      RichText.new('space suit', richTextColor(RichTextColor.RED), richTextHover()),
-      RichText.new(' that silently stood watch, waiting, while you slept.\nOn the '),
-      RichText.new('starboard wall', richTextColor(RichTextColor.RED)),
-      RichText.new(' is a hatch with a '),
-      RichText.new('lever', richTextColor(RichTextColor.RED)),
-      RichText.new(' beside it.\n\nYou have nothing.'),
-    ),
+      richText('space suit', [richTextColor(RichTextColor.RED), richTextHover()]),
+      richText(' that silently stood watch, waiting, while you slept.\nOn the '),
+      richText('starboard wall', [richTextColor(RichTextColor.RED)]),
+      richText(' is a hatch with a '),
+      richText('lever', [richTextColor(RichTextColor.RED)]),
+      richText(' beside it.\n\nYou have nothing.'),
+    ]),
   );
   textLog.fillDirection = FillDirection.bottomUp;
   contentFrame.addChild(textLog);
