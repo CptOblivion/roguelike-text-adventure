@@ -69,7 +69,7 @@ export class ASCIICanvas {
   writeRichText(src: RichText, [x, y]: Position) {
     const rows = src.rows();
     for (let offsY = 0; offsY < rows.length; offsY++) {
-      for (let offsX = 0; offsX < rows[offsY].getLength(); offsX++) {
+      for (let offsX = 0; offsX < rows[offsY].length; offsX++) {
         this.setAt(rows[offsY].getCharacterAt(offsX), [x + offsX, y + offsY]);
       }
     }

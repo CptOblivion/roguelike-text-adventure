@@ -1,13 +1,39 @@
 import { RichTextInstantiator, RichTextSection, IRichText } from './richTextCommon';
 import { CharacterWithStyle } from './characterWithStyle';
 
-export class RichText implements IRichText {
-  private rawText: string;
-  private sections: RichTextSection[];
+function sum(a, b): number {
+  return a + b;
+}
 
-  private constructor(text: string, styles?: RichTextInstantiator[]) {
-    this.rawText = text;
-    const sections = styles?.map((instantiator) => instantiator([0, text.length, this])) ?? [];
+/**
+ * REFACTOR:
+ *  * new should take either a string or an array of text objects, and a list of style instantiators
+ *  *
+ */
+
+export class RichText implements IRichText {
+  private text?: string;
+  private sections: RichTextSection[];
+  private children: RichText[] = [];
+
+  // private _length: number;
+  public get length(): number {
+    // TODO: calcualte at instantiation, and if a child changes it should bubble up and store the result
+    // return this._length;
+    if (this.children.length === 0) {
+      return this.text.length;
+    }
+    return this.children.map((child) => child.length).reduce(sum, 0);
+  }
+
+  private constructor(content: string | RichText[], styles?: RichTextInstantiator[]) {
+    if (typeof content === 'string') {
+      this.text = content;
+    } else {
+      this.children = content;
+    }
+
+    const sections = styles?.map((instantiator) => instantiator([0, content.length, this])) ?? [];
     this.sections = sections;
   }
 
@@ -19,7 +45,7 @@ export class RichText implements IRichText {
     return sections.reduce((previous, current) => previous.append(current), new RichText(''));
   }
 
-  public static new(content: string, ...styles: RichTextInstantiator[]): RichText {
+  public static new(content: string | RichText[], ...styles: RichTextInstantiator[]): RichText {
     return new RichText(content, styles);
   }
 
@@ -29,31 +55,38 @@ export class RichText implements IRichText {
   }
 
   public getRawText(): string {
-    return this.rawText;
+    if (this.children.length === 0) {
+      return this.text;
+    }
+    return this.children.map((child) => child.getRawText()).join('');
   }
 
   // TODO: replace with a render(maxLineLength: ?number, substring: [number, ?number]),
-  // truncates to substring, handles line wrapping (maybe?), outputs divs split into largest possible
-  // given common css and broken across lines
+  // TODO: handle line wrap in render
   public getCharacterAt(offset: number): CharacterWithStyle {
     const sections = this.sections.filter(
       (section) => section.start <= offset && section.end > offset,
     );
     const styles = sections.map((section) => section.getStyles()).join(' ');
 
-    return new CharacterWithStyle(this.rawText.charAt(offset), styles);
+    if (this.children.length === 0) {
+      return new CharacterWithStyle(this.text.charAt(offset), styles);
+    }
+
+    // traverse children, to find the character at the index we're looking for
+    throw new Error('not yet implemented');
   }
 
+  // MARKED FOR DELETION
   public append(text: RichText): RichText {
     // TODO: merge sections with overlap
-    const sections = text.sections.map((section) => section.shifted(this.rawText.length));
-    return new RichText(this.rawText + text.rawText, this.sections.concat(sections));
+    const sections = text.sections.map((section) => section.shifted(this.length));
+    return new RichText(this.getRawText() + text.getRawText(), this.sections.concat(sections));
   }
 
-  public substring(start: number, end: number = this.getLength()): RichText {
+  public substring(start: number, end: number = this.length): RichText {
     return new RichText(
-      this.rawText.substring(start, end),
-      // TODO: test this doesn't clip incorrectly
+      this.getRawText().substring(start, end),
       this.sections
         // only keep styles that overlap this substring
         .filter((section) => section.end > start && section.start <= end)
@@ -73,24 +106,20 @@ export class RichText implements IRichText {
     );
   }
 
-  public getLength(): number {
-    return this.rawText.length;
-  }
-
   public rows(): RichText[] {
     let offset = 0;
     const rows: RichText[] = [];
-    let nextLine = this.rawText.indexOf('\n', offset);
+    let nextLine = this.getRawText().indexOf('\n', offset);
     while (nextLine >= 0) {
       rows.push(this.substring(offset, nextLine));
       offset = nextLine + 1;
-      nextLine = this.rawText.indexOf('\n', offset);
+      nextLine = this.getRawText().indexOf('\n', offset);
     }
     rows.push(this.substring(offset));
     return rows;
   }
 
   public lastIndexOf(searchString: string, position?: number): number {
-    return this.rawText.lastIndexOf(searchString, position);
+    return this.getRawText().lastIndexOf(searchString, position);
   }
 }
