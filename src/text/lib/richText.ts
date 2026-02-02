@@ -131,21 +131,29 @@ function wrapText(text: CharacterWithStyle[], lineLength: number | null): Charac
 
   while (text.length > lineLength) {
     // find the last space before the screen breaks
-    const newRow = (() => {
+    const [newRow, remainder] = (() => {
       const breakIndex = lastIndexOf(text, (elem) => elem.character === ' ', lineLength);
       if (breakIndex !== -1) {
         // TODO: trim whitespace around line break
-        return text.slice(0, breakIndex);
+        return [text.slice(0, breakIndex), text.slice(breakIndex + 1)];
       }
 
       // word was longer than the width of the screen, split it with a hyphen
       const row = text.slice(0, lineLength - 1);
       // TODO: find a better solution than arbitrarily taking the style of the character to the left
       row.push(new CharacterWithStyle('-', row[row.length - 1].style));
-      return row;
+      return [row, text.slice(row.length - 1)];
     })();
+    text = remainder;
 
-    // account for indented spaces after the first row
+    // console.log(
+    //   'newRow:',
+    //   '_' + newRow.map((e) => e.character).join('') + '_',
+    //   'remainder:',
+    //   '_' + remainder.map((e) => e.character).join('') + '_',
+    // );
+
+    // indent wrapped rows after the first
     if (firstRow) {
       rows.push(newRow);
       lineLength -= 2;
@@ -153,12 +161,14 @@ function wrapText(text: CharacterWithStyle[], lineLength: number | null): Charac
     } else {
       rows.push(NEW_ROW_PREFIX.concat(newRow));
     }
-
-    // indent wrapped rows
-    text = text.slice(newRow.length - 1);
   }
 
   // add the remainder
-  rows.push(NEW_ROW_PREFIX.concat(text));
+  // indent wrapped rows after the first
+  if (firstRow) {
+    rows.push(text);
+  } else {
+    rows.push(NEW_ROW_PREFIX.concat(text));
+  }
   return rows;
 }

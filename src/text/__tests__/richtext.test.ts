@@ -79,10 +79,10 @@ describe('building richtext strings', () => {
   describe('wraps lines given a max line length', () => {
     test('Breaks line at last possible whitespace, if it can', () => {
       const lineLength = 8;
-      const result = richText([richText('12345' + '\n'), richText('12345678 123456')])(null);
+      const result = richText([richText('12345' + '\n'), richText('6789abcd efghij')])(null);
 
       // raw text should *not* be affected by line wrap
-      expect(result.getRawText()).toBe('12345\n12345678 123456');
+      expect(result.getRawText()).toBe('12345\n6789abcd efghij');
 
       const rendered = result.render(undefined, undefined, lineLength);
 
@@ -90,9 +90,9 @@ describe('building richtext strings', () => {
 
       // >12345
       expect(rendered[0]).toHaveLength(5);
-      // >12345678
+      // >n6789abcd
       expect(rendered[1]).toHaveLength(8);
-      // >  123456
+      // >  efghij
       expect(rendered[2]).toHaveLength(8);
     });
 
