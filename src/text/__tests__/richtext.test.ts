@@ -123,4 +123,19 @@ describe('building richtext strings', () => {
     expect(result[0][0].style).toBe(styleRed);
     expect(result[0][1].style).toBe(`${styleRed}${styleBold}`);
   });
+
+  test('Renders a substring when asked', () => {
+    const result = richText([
+      richText(firstSection),
+      richText(secondSection, [richTextBold()]),
+      richText(thirdSection, [richTextColor(RichTextColor.RED)]),
+    ])(null).render(firstSection.length, firstSection.length + secondSection.length);
+
+    expect(result).toHaveLength(1);
+
+    expect(result[0]).toHaveLength(secondSection.length);
+    for (let i = 0; i < secondSection.length; i++) {
+      expect(result[0][i].character).toBe(secondSection[i]);
+    }
+  });
 });
