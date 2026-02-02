@@ -1,6 +1,6 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
-import { TextDisplay } from '../common';
+import { TextDisplay } from '../common/common';
 import { richText, RichText, RichTextInstantiator } from '../text/richText';
 
 export enum FillDirection {

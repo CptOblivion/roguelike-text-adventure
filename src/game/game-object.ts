@@ -1,5 +1,5 @@
 import { Temperature, MatterState, Weight, Color, Size } from './units';
-import { FailWithReason, Success } from '../common';
+import { FailWithReason, Success } from '../common/common';
 
 export class Attributes {
   weight = 1; // lbs

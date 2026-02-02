@@ -30,3 +30,18 @@ export function nullThrows<T>(obj: T | null): T {
 
   return obj;
 }
+
+export function lastIndexOf<T>(
+  arr: T[],
+  matcher: (elem: T) => boolean,
+  startIndex: number = arr.length - 1,
+): number {
+  const start = Math.max(0, Math.min(arr.length - 1, startIndex));
+  for (let i = start; i >= 0; i--) {
+    if (matcher(arr[i])) {
+      return i;
+    }
+  }
+  // not found
+  return -1;
+}

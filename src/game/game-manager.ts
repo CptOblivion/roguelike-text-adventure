@@ -1,4 +1,4 @@
-import { EventText, TextDisplay } from '../common';
+import { EventText, TextDisplay } from '../common/common';
 import { Parser, Action } from './Parser';
 import { WorldStateManager } from './world-state-manager';
 import { Player } from './player';

@@ -1,6 +1,6 @@
 import { RichTextSectionInstantiator, RichTextSection, IRichText } from './richTextCommon';
 import { CharacterWithStyle } from './characterWithStyle';
-import { nullThrows } from '../../common';
+import { nullThrows, lastIndexOf } from '../../common/common';
 
 export type RichTextInstantiator = (parent: RichText | null) => RichText;
 
@@ -67,11 +67,12 @@ export class RichText implements IRichText {
 
     let offset = 0;
     for (const child of this.children) {
-      if (index + child.length >= index) {
+      if (index < offset + child.length) {
         const out = nullThrows(child.renderAtIndex(index - offset));
-        out.style = this.styles + out.style;
+        out.style = styles + out.style;
         return out;
       }
+      offset += child.length;
     }
 
     // shouldn't be possible to get here, so make noise if we do
@@ -88,7 +89,7 @@ export class RichText implements IRichText {
     const output: CharacterWithStyle[][] = [];
     let row: CharacterWithStyle[] = [];
 
-    const offs = Math.max(0, start, Math.min(end, this.length));
+    const offs = Math.max(0, start, Math.min(start, this.length));
     const len = Math.max(start, Math.min(end, this.length));
 
     for (let i = offs; i < len; i++) {
@@ -123,44 +124,41 @@ function wrapText(text: CharacterWithStyle[], lineLength: number | null): Charac
   if (lineLength == null) {
     return [text];
   }
+
   const rows: CharacterWithStyle[][] = [];
 
-  while (text.length > lineLength - 1) {
+  let firstRow = true;
+
+  while (text.length > lineLength) {
     // find the last space before the screen breaks
-    const breakIndex = lastIndexOf(text, (elem) => elem.character === ' ', lineLength - 1);
     const newRow = (() => {
+      const breakIndex = lastIndexOf(text, (elem) => elem.character === ' ', lineLength);
       if (breakIndex !== -1) {
+        // TODO: trim whitespace around line break
         return text.slice(0, breakIndex);
       }
 
       // word was longer than the width of the screen, split it with a hyphen
-      const row = text.slice(0, lineLength - NEW_ROW_PREFIX.length);
-      text
-        // TODO: find a better solution than arbitrarily taking the style of the character to the left
-        .push(new CharacterWithStyle('-', row[row.length - 1].style));
+      const row = text.slice(0, lineLength - 1);
+      // TODO: find a better solution than arbitrarily taking the style of the character to the left
+      row.push(new CharacterWithStyle('-', row[row.length - 1].style));
       return row;
     })();
 
-    rows.push(newRow);
+    // account for indented spaces after the first row
+    if (firstRow) {
+      rows.push(newRow);
+      lineLength -= 2;
+      firstRow = false;
+    } else {
+      rows.push(NEW_ROW_PREFIX.concat(newRow));
+    }
+
     // indent wrapped rows
-    text = NEW_ROW_PREFIX.concat(text.slice(newRow.length + 1));
+    text = text.slice(newRow.length - 1);
   }
 
   // add the remainder
-  rows.push(text);
+  rows.push(NEW_ROW_PREFIX.concat(text));
   return rows;
-}
-
-function lastIndexOf<T>(
-  arr: T[],
-  matcher: (elem: T) => boolean,
-  startIndex: number = arr.length - 1,
-): number {
-  for (let i = startIndex; i >= 0; i--) {
-    if (matcher(arr[i])) {
-      return i;
-    }
-  }
-  // not found
-  return -1;
 }

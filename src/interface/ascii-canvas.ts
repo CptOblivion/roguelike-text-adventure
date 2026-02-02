@@ -1,4 +1,4 @@
-import { Position } from '../common';
+import { Position } from '../common/common';
 import { CharacterWithStyle, RichText, RichTextInstantiator } from '../text/richText';
 
 export class ASCIICanvas {

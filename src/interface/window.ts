@@ -1,6 +1,6 @@
 import { Borders, Sides } from './borders';
 import { ASCIICanvas } from './ascii-canvas';
-import { Position } from '../common';
+import { Position } from '../common/common';
 
 // abusing truthiness in JS to map horizontal to false
 export enum ChildrenDirections {

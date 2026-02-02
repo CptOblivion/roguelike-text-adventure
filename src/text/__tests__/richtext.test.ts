@@ -1,87 +1,126 @@
-import { RichText, richTextBold, RichTextColor, richTextColor } from '../richText';
+import { richText, richTextBold, RichTextColor, richTextColor } from '../richText';
 
 describe('building richtext strings', () => {
   const firstSection = 'first section, ';
   const secondSection = 'second section,';
   const thirdSection = ' third section';
 
-  const getSections = () =>
-    RichText.build(
-      RichText.new(firstSection),
-      RichText.new(secondSection, richTextBold()),
-      RichText.new(thirdSection, richTextColor(RichTextColor.RED)),
-    );
-  test('builds a string from sections', () => {
-    const result = getSections();
+  const styleBold = 'font-weight: bold;';
+  const styleRed = `color: ${RichTextColor.RED};`;
 
-    expect(result.getRawText()).toBe('first section, second section, third section');
+  const richTextLinear = richText([
+    richText(firstSection),
+    richText(secondSection, [richTextBold()]),
+    richText(thirdSection, [richTextColor(RichTextColor.RED)]),
+  ]);
+
+  const richTextNested = richText([
+    richText([richText(firstSection), richText(secondSection, [richTextBold()])]),
+    richText(thirdSection, [richTextColor(RichTextColor.RED)]),
+  ]);
+
+  describe.each([
+    ['linear', richTextLinear],
+    ['nested', richTextNested],
+  ])('$case', (_case, composedText) => {
+    test('Builds a string from sections', () => {
+      expect(composedText(null).getRawText()).toBe(
+        `${firstSection}${secondSection}${thirdSection}`,
+      );
+    });
+
+    test('Renders characters matching the input sections', () => {
+      const result = composedText(null).render();
+
+      expect(result).toHaveLength(1);
+
+      const row = result[0];
+
+      let i = 0;
+      for (const expectChar of firstSection) {
+        const char = row[i];
+        expect(char.character).toBe(expectChar);
+        expect(char.style).toBe('');
+        i++;
+      }
+
+      for (const expectChar of secondSection) {
+        const char = row[i];
+        expect(char.character).toBe(expectChar);
+        expect(char.style).toBe(styleBold);
+        i++;
+      }
+
+      for (const expectChar of thirdSection) {
+        const char = row[i];
+        expect(char.character).toBe(expectChar);
+        expect(char.style).toBe(styleRed);
+        i++;
+      }
+    });
+
+    test('Handles newlines properly', () => {
+      const result = richText([
+        richText(firstSection + '\n'),
+        richText(secondSection, [richTextBold()]),
+      ])(null);
+
+      expect(result.getRawText()).toBe(`${firstSection}\n${secondSection}`);
+
+      const rendered = result.render();
+
+      expect(rendered).toHaveLength(2);
+
+      expect(rendered[0][0].style).toBe('');
+      expect(rendered[1][0].style).toBe(styleBold);
+    });
   });
 
-  test('returns css matching the input sections', () => {
-    const result = getSections();
+  describe('wraps lines given a max line length', () => {
+    test('Breaks line at last possible whitespace, if it can', () => {
+      const lineLength = 8;
+      const result = richText([richText('12345' + '\n'), richText('12345678 123456')])(null);
 
-    let i = 0;
-    for (const expectChar of firstSection) {
-      const char = result.getCharacterAt(i);
-      expect(char.character).toBe(expectChar);
-      expect(char.style).toBe('');
-      i++;
-    }
+      // raw text should *not* be affected by line wrap
+      expect(result.getRawText()).toBe('12345\n12345678 123456');
 
-    for (const expectChar of secondSection) {
-      const char = result.getCharacterAt(i);
-      expect(char.character).toBe(expectChar);
-      expect(char.style).toBe('font-weight: bold;');
-      i++;
-    }
+      const rendered = result.render(undefined, undefined, lineLength);
 
-    for (const expectChar of thirdSection) {
-      const char = result.getCharacterAt(i);
-      expect(char.character).toBe(expectChar);
-      expect(char.style).toBe(`color: ${RichTextColor.RED};`);
-      i++;
-    }
+      expect(rendered).toHaveLength(3);
+
+      // >12345
+      expect(rendered[0]).toHaveLength(5);
+      // >12345678
+      expect(rendered[1]).toHaveLength(8);
+      // >  123456
+      expect(rendered[2]).toHaveLength(8);
+    });
+
+    test('If the text is too long to fit on a line, it breaks mid-word', () => {
+      const lineLength = 8;
+
+      const result = richText('123456789abcdefgh')(null).render(undefined, undefined, lineLength);
+
+      expect(result).toHaveLength(3);
+
+      // >1234567-
+      // >  89abc-
+      // >  defgh
+      expect(result[0]).toHaveLength(8);
+      expect(result[1]).toHaveLength(8);
+      expect(result[2]).toHaveLength(7);
+    });
   });
 
-  test('divides substrings correctly', () => {
-    const startingText = getSections();
+  test('Nested sections inherit CSS from parents', () => {
+    const result = richText([
+      richText(
+        [richText('A'), richText('B', [richTextBold()])],
+        [richTextColor(RichTextColor.RED)],
+      ),
+    ])(null).render();
 
-    const start = 5;
-    const end = 30;
-    const expectString = (firstSection + secondSection).substring(start, end);
-
-    const substring1 = startingText.substring(start, end);
-
-    expect(substring1.getRawText()).toBe(expectString);
-
-    let i = 0;
-    for (const expectChar of firstSection.substring(start)) {
-      const char = substring1.getCharacterAt(i);
-      expect(char.character).toBe(expectChar);
-      expect(char.style).toBe('');
-      i++;
-    }
-
-    for (const expectChar of secondSection.substring(0, end - firstSection.length)) {
-      const char = substring1.getCharacterAt(i);
-      expect(char.character).toBe(expectChar);
-      expect(char.style).toBe('font-weight: bold;');
-      i++;
-    }
-
-    // verify styles got clipped so they don't bleed over into newly added sections
-    const sandwichedText = RichText.build(
-      RichText.new('_'),
-      substring1,
-      RichText.new('_', richTextColor(RichTextColor.RED)),
-    );
-
-    const prefix = sandwichedText.getCharacterAt(0);
-    const suffix = sandwichedText.getCharacterAt(sandwichedText.getLength() - 1);
-
-    expect(prefix.character).toBe('_');
-    expect(prefix.style).toBe('');
-    expect(suffix.character).toBe('_');
-    expect(suffix.style).toBe(`color: ${RichTextColor.RED};`);
+    expect(result[0][0].style).toBe(styleRed);
+    expect(result[0][1].style).toBe(`${styleRed}${styleBold}`);
   });
 });
