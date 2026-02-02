@@ -79,13 +79,12 @@ export class RichText implements IRichText {
     throw new Error(`Failed to find child at index ${index}`);
   }
 
-  // TODO: get rid of renderAtIndex and characterWithStyle, replace with virtual dom element
+  // TODO: get rid of renderAtIndex and characterWithStyle, replace with virtual dom
   public render(
     start: number = 0,
     end: number = this.length,
     maxLineLength: number | null = null,
   ): CharacterWithStyle[][] {
-    // TODO: handle line wrap
     const output: CharacterWithStyle[][] = [];
     let row: CharacterWithStyle[] = [];
 
@@ -146,13 +145,6 @@ function wrapText(text: CharacterWithStyle[], lineLength: number | null): Charac
     })();
     text = remainder;
 
-    // console.log(
-    //   'newRow:',
-    //   '_' + newRow.map((e) => e.character).join('') + '_',
-    //   'remainder:',
-    //   '_' + remainder.map((e) => e.character).join('') + '_',
-    // );
-
     // indent wrapped rows after the first
     if (firstRow) {
       rows.push(newRow);
@@ -164,7 +156,6 @@ function wrapText(text: CharacterWithStyle[], lineLength: number | null): Charac
   }
 
   // add the remainder
-  // indent wrapped rows after the first
   if (firstRow) {
     rows.push(text);
   } else {

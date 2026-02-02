@@ -62,14 +62,18 @@ export class WindowRoot extends WindowBase {
 
   protected override async _update(): Promise<ASCIICanvas> {
     await super._update();
+
     const canvas = this._canvas.render();
+
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const newChar = canvas[y][x];
         const oldChar = this.htmlGrid.children[y].children[x] as HTMLElement;
+
         if (oldChar.textContent !== newChar.character) {
           oldChar.textContent = newChar.character;
         }
+
         if (newChar.style != null && oldChar.style.cssText !== newChar.style) {
           oldChar.style = newChar.style;
         }
@@ -90,8 +94,10 @@ export class WindowRoot extends WindowBase {
     instance._redraw_queued = false;
     WindowRoot._instance._update().then(() => {
       instance._drawing = false;
+
       if (instance._redraw_queued) {
         // currently if we consistently queue the next redraw before the last one finished, I think we'll run out of stack
+        // this could happen if e.g. we have some animation playing, consistently pushing out updates before the previous render is done
         WindowRoot.redraw();
       }
     });

@@ -13,10 +13,12 @@ export class WindowText extends WindowBase implements TextDisplay {
   fillDirection: FillDirection = FillDirection.topDown;
   fillDelay: number = 5;
 
+  // TODO: instead use tuples of request/response (or an object with those and addl. data)
   private messages: RichText[] = [];
 
-  private _fillOffset: number = 0;
-  private _filling = false;
+  private fillRow: number = 0;
+  private fillRowPosition: number = 0;
+  private filling = false;
 
   /**
    * directly set text rendered
@@ -47,27 +49,28 @@ export class WindowText extends WindowBase implements TextDisplay {
   }
 
   private typeMessage(text: RichTextInstantiator, delay: number) {
-    if (!this._filling) {
-      // we don't want to set this if we're already in the middle of typing some older text
-      this._fillOffset = this.messages.length;
-    }
-
     const message = text(null);
+    if (!this.filling) {
+      // we don't want to set this if we're already in the middle of typing some older text
+      this.fillRow = this.messages.length;
+      this.fillRowPosition = 0;
+    }
 
     this.setText(this.messages.concat([message]));
 
-    if (delay == 0) {
-      this._fillOffset = this.messages.length;
+    if (delay === 0) {
+      this.fillRow = this.messages.length;
+      this.fillRowPosition = message.length;
       return;
     }
 
     // TODO: check if this can be a race condition
-    // if we're already typing, let the existing interval keep going
-    if (this._filling == true) {
+    // if we're already printing, let the existing interval keep going
+    if (this.filling == true) {
       return;
     }
 
-    this._filling = true;
+    this.filling = true;
     const intervalID = setInterval(() => {
       // TODO: parse markdown
       let numChars = 1;
@@ -77,16 +80,23 @@ export class WindowText extends WindowBase implements TextDisplay {
         numChars = 4 / delay;
       }
 
-      this._fillOffset += numChars;
-      if (this._fillOffset >= this.messages.length) {
-        this._fillOffset = this.messages.length;
-        clearInterval(intervalID);
-        this._filling = false;
+      const message = this.messages[this.fillRow];
+
+      this.fillRowPosition += numChars;
+      if (this.fillRowPosition >= message.length) {
+        this.fillRow++;
+        this.fillRowPosition = 0;
+
+        if (this.fillRow >= this.messages.length - 1) {
+          this.fillRowPosition = message.length;
+          clearInterval(intervalID);
+          this.filling = false;
+        }
       }
 
       if (this.fillDelay !== delay) {
         clearInterval(intervalID);
-        this._filling = false;
+        this.filling = false;
         this.typeMessage(richText(''), this.fillDelay);
       }
       this.requestRedraw();
@@ -97,19 +107,19 @@ export class WindowText extends WindowBase implements TextDisplay {
     await this._canvas.clear();
     super._update();
 
-    const rendered = this.messages.map((message) =>
-      message.render(0, this._fillOffset, this.interiorWidth),
-    );
+    const rendered = this.messages
+      .map((message) => message.render(0, this.fillRowPosition, this.interiorWidth))
+      .reduce((rows, row) => rows.concat(row), []);
 
     if (this.fillDirection === FillDirection.topDown) {
       for (let i = 0; i < rendered.length; i++) {
         const row = rendered[i];
-        this._canvas.writeRichText(row, [this.indexLeft, this.indexTop + i]);
+        this._canvas.writeRichText([row], [this.indexLeft, this.indexTop + i]);
       }
     } else {
       for (let i = 0; i < rendered.length; i++) {
         const row = rendered[rendered.length - 1 - i];
-        this._canvas.writeRichText(row, [this.indexLeft, this.indexBottom - i]);
+        this._canvas.writeRichText([row], [this.indexLeft, this.indexBottom - i]);
       }
     }
     return this._canvas;

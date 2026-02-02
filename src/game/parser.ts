@@ -120,7 +120,6 @@ export class Parser {
     // wipe punctuation and normalize whitespace
     // not sure how they'd get a tab in there, but why not cover it anyways
     let inputCleaned = input.replace(/(?:\.|,|\!|\?|\t| )+/g, ' ').trim();
-    // console.log(`cleaned: "${inputCleaned}"`);
 
     for (const matcher of MATCHERS) {
       const resp = matcher.match(inputCleaned);

@@ -46,7 +46,6 @@ class RichTextSectionHover extends RichTextSection {
       EventType.MouseEnter,
       () => {
         this.hovered = true;
-        console.log(this.parent);
         this.parent.redraw();
       },
       new Box(1, 1, 10, 10),
@@ -61,7 +60,6 @@ class RichTextSectionHover extends RichTextSection {
   }
 
   public getStyles(): string {
-    console.log('style', this);
     return this.hovered ? `color: ${RichTextColor.GREEN}; cursor: pointer;` : '';
   }
 }
