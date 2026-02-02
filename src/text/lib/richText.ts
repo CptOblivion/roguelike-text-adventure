@@ -44,6 +44,7 @@ export class RichText implements IRichText {
   public redraw(): void {
     console.log('requesting redraw');
     // TODO: actually trigger redraw
+    // TODO: diff results before requesting redraw
   }
 
   public getRawText(): string {
