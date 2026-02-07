@@ -41,9 +41,9 @@ function buildWindow(el = document.body) {
       ),
       richText('space suit', [richTextColor(RichTextColor.RED), richTextHover()]),
       richText(' that silently stood watch, waiting, while you slept.\nOn the '),
-      richText('starboard wall', [richTextColor(RichTextColor.RED)]),
+      richText('starboard wall', [richTextColor(RichTextColor.RED), richTextHover()]),
       richText(' is a hatch with a '),
-      richText('lever', [richTextColor(RichTextColor.RED)]),
+      richText('lever', [richTextColor(RichTextColor.RED), richTextHover()]),
       richText(' beside it.\n\nYou have nothing.'),
     ]),
   );
