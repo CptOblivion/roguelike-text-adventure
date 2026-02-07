@@ -1,7 +1,5 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
-import { CharacterWithStyle } from '../text/richText';
-import { EventManager, Position } from '../events/events';
 
 const ROW_STYLE = 'display: flex; flex-direction: row;';
 
@@ -48,7 +46,6 @@ export class WindowRoot extends WindowBase {
       children.push(row);
       for (let x = 0; x < width; x++) {
         const char = document.createElement('div');
-        EventManager.registerElement(char, new Position(x, y));
         char.textContent = ' ';
         row.append(char);
       }
@@ -69,13 +66,12 @@ export class WindowRoot extends WindowBase {
       for (let x = 0; x < this.width; x++) {
         const newChar = canvas[y][x];
         const oldChar = this.htmlGrid.children[y].children[x] as HTMLElement;
-
-        if (oldChar.textContent !== newChar.character) {
-          oldChar.textContent = newChar.character;
-        }
-
-        if (newChar.style != null && oldChar.style.cssText !== newChar.style) {
-          oldChar.style = newChar.style;
+        if (
+          oldChar.textContent !== newChar.textContent ||
+          oldChar.style.cssText !== newChar.style.cssText
+          // TODO: diff event listners somehow, or just let the renderer declare a component as changed
+        ) {
+          this.htmlGrid.children[y].replaceChild(newChar, oldChar);
         }
       }
     }

@@ -25,4 +25,6 @@ export abstract class RichTextSection {
     copy.end += offset;
     return copy;
   }
+
+  public registerEvents(elem: HTMLElement): void {}
 }

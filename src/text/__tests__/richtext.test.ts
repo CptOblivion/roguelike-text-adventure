@@ -6,7 +6,8 @@ describe('building richtext strings', () => {
   const thirdSection = ' third section';
 
   const styleBold = 'font-weight: bold;';
-  const styleRed = `color: ${RichTextColor.RED};`;
+  // the css string gets converted to rgb regardless of input format
+  const styleRed = `color: rgb(255, 84, 84);`;
 
   const richTextLinear = richText([
     richText(firstSection),
@@ -39,22 +40,22 @@ describe('building richtext strings', () => {
       let i = 0;
       for (const expectChar of firstSection) {
         const char = row[i];
-        expect(char.character).toBe(expectChar);
-        expect(char.style).toBe('');
+        expect(char.textContent).toBe(expectChar);
+        expect(char.style.cssText).toBe('');
         i++;
       }
 
       for (const expectChar of secondSection) {
         const char = row[i];
-        expect(char.character).toBe(expectChar);
-        expect(char.style).toBe(styleBold);
+        expect(char.textContent).toBe(expectChar);
+        expect(char.style.cssText).toBe(styleBold);
         i++;
       }
 
       for (const expectChar of thirdSection) {
         const char = row[i];
-        expect(char.character).toBe(expectChar);
-        expect(char.style).toBe(styleRed);
+        expect(char.textContent).toBe(expectChar);
+        expect(char.style.cssText).toBe(styleRed);
         i++;
       }
     });
@@ -71,8 +72,8 @@ describe('building richtext strings', () => {
 
       expect(rendered).toHaveLength(2);
 
-      expect(rendered[0][0].style).toBe('');
-      expect(rendered[1][0].style).toBe(styleBold);
+      expect(rendered[0][0].style.cssText).toBe('');
+      expect(rendered[1][0].style.cssText).toBe(styleBold);
     });
   });
 
@@ -120,8 +121,8 @@ describe('building richtext strings', () => {
       ),
     ])(null).render();
 
-    expect(result[0][0].style).toBe(styleRed);
-    expect(result[0][1].style).toBe(`${styleRed}${styleBold}`);
+    expect(result[0][0].style.cssText).toBe(styleRed);
+    expect(result[0][1].style.cssText).toBe(`${styleRed} ${styleBold}`);
   });
 
   test('Renders a substring when asked', () => {
@@ -135,7 +136,7 @@ describe('building richtext strings', () => {
 
     expect(result[0]).toHaveLength(secondSection.length);
     for (let i = 0; i < secondSection.length; i++) {
-      expect(result[0][i].character).toBe(secondSection[i]);
+      expect(result[0][i].textContent).toBe(secondSection[i]);
     }
   });
 });

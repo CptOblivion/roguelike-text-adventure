@@ -1,7 +1,7 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
 import { TextDisplay } from '../common/common';
-import { CharacterWithStyle, richText, RichText, RichTextInstantiator } from '../text/richText';
+import { richText, RichText, RichTextInstantiator } from '../text/richText';
 
 export enum FillDirection {
   topDown = 0,
@@ -112,7 +112,7 @@ export class WindowText extends WindowBase implements TextDisplay {
     await this._canvas.clear();
     super._update();
 
-    const rows: CharacterWithStyle[][] = [];
+    const rows: HTMLElement[][] = [];
     for (let i = 0; i < this.messages.length || i < this.fillMessageIndex; i++) {
       const message = this.messages[i];
       const limit = i === this.fillMessageIndex ? this.fillRowPosition : undefined;

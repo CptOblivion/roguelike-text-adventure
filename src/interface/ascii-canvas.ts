@@ -1,15 +1,17 @@
-import { Position } from '../common/common';
-import { CharacterWithStyle, RichText, RichTextInstantiator } from '../text/richText';
+import { newElem, Position } from '../common/common';
 
 export class ASCIICanvas {
   width: number = 0;
   height: number = 0;
-  private _canvas: CharacterWithStyle[][] = new Array();
+  private _canvas: HTMLElement[][] = new Array();
 
   clear() {
     this._canvas = new Array(this.height).fill(undefined);
-    for (const i in this._canvas) {
-      this._canvas[i] = new Array(this.width).fill(' ');
+    for (const y in this._canvas) {
+      this._canvas[y] = new Array(this.width);
+      for (let x = 0; x < this.width; x++) {
+        this._canvas[y][x] = newElem(' ');
+      }
     }
   }
 
@@ -27,17 +29,17 @@ export class ASCIICanvas {
     return true;
   }
 
-  getAt(x: number, y: number): CharacterWithStyle | null {
+  getAt(x: number, y: number): HTMLElement | null {
     if (!this.checkBounds([x, y])) return null;
     return this._canvas[y][x];
   }
 
-  setAt(value: CharacterWithStyle | string, position: Position) {
-    let character: CharacterWithStyle = (() => {
+  setAt(value: HTMLElement | string, position: Position) {
+    let character: HTMLElement = (() => {
       if (typeof value !== 'string') {
         return value;
       }
-      return new CharacterWithStyle(value, '');
+      return newElem(value, '');
     })();
 
     if (!this.checkBounds(position)) return;
@@ -77,7 +79,7 @@ export class ASCIICanvas {
     }
   }
 
-  writeRichText(rows: CharacterWithStyle[][], [x, y]: Position) {
+  writeRichText(rows: HTMLElement[][], [x, y]: Position) {
     for (let offsY = 0; offsY < rows.length; offsY++) {
       for (let offsX = 0; offsX < rows[offsY].length; offsX++) {
         this.setAt(rows[offsY][offsX], [x + offsX, y + offsY]);
@@ -85,7 +87,7 @@ export class ASCIICanvas {
     }
   }
 
-  render(): CharacterWithStyle[][] {
+  render(): HTMLElement[][] {
     return this._canvas;
   }
 }

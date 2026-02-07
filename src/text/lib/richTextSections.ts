@@ -1,4 +1,4 @@
-import { Box, EventManager, EventType } from '../../events/events';
+import { EventType } from '../../common/common';
 import {
   RichTextSectionInstantiatorArgs,
   RichTextSectionInstantiator,
@@ -40,24 +40,19 @@ export function richTextColor(color: RichTextColor): RichTextSectionInstantiator
 class RichTextSectionHover extends RichTextSection {
   private hovered: boolean = false;
 
-  constructor(args: RichTextSectionInstantiatorArgs) {
-    super(args);
-    EventManager.addListener(
-      EventType.MouseEnter,
-      () => {
-        this.hovered = true;
-        this.parent.redraw();
-      },
-      new Box(1, 1, 10, 10),
-    );
-    EventManager.addListener(
-      EventType.MouseLeave,
-      () => {
-        this.hovered = false;
-        this.parent.redraw();
-      },
-      new Box(1, 1, 10, 10),
-    );
+  private onMouseEnter(): void {
+    this.hovered = true;
+    this.parent.redraw();
+  }
+
+  private onMouseExit(): void {
+    this.hovered = false;
+    this.parent.redraw();
+  }
+
+  public registerEvents(elem: HTMLElement): void {
+    elem.addEventListener(EventType.MouseEnter, () => this.onMouseEnter());
+    elem.addEventListener(EventType.MouseLeave, () => this.onMouseExit());
   }
 
   public getStyles(): string {
