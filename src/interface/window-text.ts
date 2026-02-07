@@ -113,7 +113,7 @@ export class WindowText extends WindowBase implements TextDisplay {
     super._update();
 
     const rows: HTMLElement[][] = [];
-    for (let i = 0; i < this.messages.length || i < this.fillMessageIndex; i++) {
+    for (let i = 0; i < this.messages.length && i <= this.fillMessageIndex; i++) {
       const message = this.messages[i];
       const limit = i === this.fillMessageIndex ? this.fillRowPosition : undefined;
       rows.push(...message.render(0, limit, this.interiorWidth));
