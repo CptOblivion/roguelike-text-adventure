@@ -24,12 +24,14 @@ export class WindowText extends WindowBase implements TextDisplay {
   /**
    * directly set text rendered
    * ignores fillDelay
-   * @param text
+   * @param messages
    */
-  setText(text: RichText[]) {
+  setText(messages: RichText[]) {
     // TODO: word wrap
-    this.messages = text;
-    this.changed = true;
+    for (let i = 0; i < messages.length; i++) {
+      messages[i].registerRedraw(this.requestRedraw);
+    }
+    this.messages = messages;
     this.requestRedraw();
   }
 

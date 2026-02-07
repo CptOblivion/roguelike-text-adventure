@@ -17,6 +17,8 @@ export class RichText implements IRichText {
   private parent: RichText | null;
   private children: RichText[] = [];
 
+  private redrawContainer: (() => void) | null = null;
+
   private hasChildren(): boolean {
     return this.children != null && this.children.length !== 0;
   }
@@ -42,9 +44,13 @@ export class RichText implements IRichText {
   }
 
   public redraw(): void {
-    console.log('requesting redraw');
-    // TODO: actually trigger redraw
     // TODO: diff results before requesting redraw
+    this.parent?.redraw();
+    this.redrawContainer?.();
+  }
+
+  public registerRedraw(callback: () => void): void {
+    this.redrawContainer = callback;
   }
 
   public getRawText(): string {

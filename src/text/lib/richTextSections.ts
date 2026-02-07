@@ -54,6 +54,7 @@ class RichTextSectionHover extends RichTextSection {
       EventType.MouseLeave,
       () => {
         this.hovered = false;
+        this.parent.redraw();
       },
       new Box(1, 1, 10, 10),
     );
