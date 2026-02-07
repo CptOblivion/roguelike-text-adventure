@@ -34,7 +34,9 @@ class Matcher {
 
   match(input: string): ActionParsed | string | null {
     const result = this.regex.exec(input);
-    if (result === null) return null;
+
+    if (result == null || result.groups == null) return null;
+
     return this.action(result.groups);
   }
 }
@@ -118,7 +120,6 @@ export class Parser {
     // wipe punctuation and normalize whitespace
     // not sure how they'd get a tab in there, but why not cover it anyways
     let inputCleaned = input.replace(/(?:\.|,|\!|\?|\t| )+/g, ' ').trim();
-    console.log(`cleaned: "${inputCleaned}"`);
 
     for (const matcher of MATCHERS) {
       const resp = matcher.match(inputCleaned);

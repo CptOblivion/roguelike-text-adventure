@@ -1,11 +1,15 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
 
+const ROW_STYLE = 'display: flex; flex-direction: row;';
+
 export class WindowRoot extends WindowBase {
   private _el: HTMLElement;
   private static _instance: WindowRoot;
   private _drawing: boolean = false;
   private _redraw_queued: boolean = false;
+
+  private htmlGrid: HTMLElement;
 
   constructor(el: HTMLElement) {
     if (WindowRoot._instance !== undefined) {
@@ -13,6 +17,8 @@ export class WindowRoot extends WindowBase {
     }
     super('root');
     WindowRoot._instance = this;
+    WindowBase.redraw = this._redrawRoot;
+    this.htmlGrid = document.createElement('div');
     this._el = el;
     window.addEventListener('resize', this._onWindowResize.bind(this));
     this._onWindowResize();
@@ -27,22 +33,48 @@ export class WindowRoot extends WindowBase {
     this._el.innerHTML = 'X';
     const baseHeight = this._el.offsetHeight;
     // TODO: optimize (double character count until new height found, then binary search back?)
-    for (; this._el.offsetHeight === baseHeight; this._el.innerHTML += 'X') {
-      // debug: change the function to async and enable the following line to watch the update go
-      // await new Promise((r) => setTimeout(r, 20));
-    }
+    for (; this._el.offsetHeight === baseHeight; this._el.innerHTML += 'X') {}
     const heightTwoChars = this._el.offsetHeight;
+
     const width = this._el.innerHTML.length - 1;
     const height = Math.floor(window.innerHeight / (heightTwoChars - baseHeight));
-    WindowBase.redraw = this._redrawRoot;
     this.resize(width, height);
+    const children: Array<HTMLElement> = [];
+    for (let y = 0; y < height; y++) {
+      const row = document.createElement('div');
+      row.style = ROW_STYLE;
+      children.push(row);
+      for (let x = 0; x < width; x++) {
+        const char = document.createElement('div');
+        char.textContent = ' ';
+        row.append(char);
+      }
+    }
+
+    this.htmlGrid.replaceChildren(...children);
+    this._el.replaceChildren(this.htmlGrid);
+
     this._update();
   }
 
   protected override async _update(): Promise<ASCIICanvas> {
     await super._update();
-    // WindowBase.prototype._update.call(this);
-    this._el.textContent = this._canvas.render();
+
+    const canvas = this._canvas.render();
+
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const newChar = canvas[y][x];
+        const oldChar = this.htmlGrid.children[y].children[x] as HTMLElement;
+        if (
+          oldChar.textContent !== newChar.textContent ||
+          oldChar.style.cssText !== newChar.style.cssText
+          // TODO: diff event listners somehow, or just let the renderer declare a component as changed
+        ) {
+          this.htmlGrid.children[y].replaceChild(newChar, oldChar);
+        }
+      }
+    }
     return this._canvas;
   }
 
@@ -55,10 +87,13 @@ export class WindowRoot extends WindowBase {
       return;
     }
     instance._drawing = true;
+    instance._redraw_queued = false;
     WindowRoot._instance._update().then(() => {
       instance._drawing = false;
+
       if (instance._redraw_queued) {
         // currently if we consistently queue the next redraw before the last one finished, I think we'll run out of stack
+        // this could happen if e.g. we have some animation playing, consistently pushing out updates before the previous render is done
         WindowRoot.redraw();
       }
     });

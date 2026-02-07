@@ -1,5 +1,5 @@
 import { GameObject } from './game-object';
-import { FailWithReason, Success } from '../common';
+import { FailWithReason, Success } from '../common/common';
 
 export class Character extends GameObject {
   inventory: Set<GameObject>;

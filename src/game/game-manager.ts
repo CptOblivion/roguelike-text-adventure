@@ -1,4 +1,4 @@
-import { EventText, TextDisplay } from '../common';
+import { EventText, TextDisplay } from '../common/common';
 import { Parser, Action } from './Parser';
 import { WorldStateManager } from './world-state-manager';
 import { Player } from './player';
@@ -19,12 +19,12 @@ export class GameManager {
       return;
     }
 
-    this.textLog.submitMessage(`\n> ${ev.text}`);
+    this.textLog.submitMessageString(`\n> ${ev.text}`);
 
     const response = this.parser.parse(ev.text);
 
     if (typeof response === 'string') {
-      this.textLog.submitMessage(`${response}`);
+      this.textLog.submitMessageString(`${response}`);
       return;
     }
 
@@ -32,7 +32,7 @@ export class GameManager {
       case Action.go:
         if (response.subject) {
           // might not implement this one
-          this.textLog.submitMessage(
+          this.textLog.submitMessageString(
             `[PLACEHOLDER]: you go ${response.direction} the ${response.subject}`,
           );
           break;
@@ -45,7 +45,7 @@ export class GameManager {
         // tick game state
         // if room has been visited, print room shorthand and return
         // print room full description
-        this.textLog.submitMessage(`[PLACEHOLDER]: you go ${response.direction}`);
+        this.textLog.submitMessageString(`[PLACEHOLDER]: you go ${response.direction}`);
         break;
 
       case Action.get:
@@ -55,7 +55,7 @@ export class GameManager {
         // move to inventory
         // tick game state
         // print simple response
-        this.textLog.submitMessage(`[PLACEHOLDER]: you get the ${response.subject}`);
+        this.textLog.submitMessageString(`[PLACEHOLDER]: you get the ${response.subject}`);
         break;
 
       case Action.use:
@@ -65,20 +65,20 @@ export class GameManager {
         // check object is reachable
         // [handwavey gesture] process interactions
         // this one may branch over to put (EG 'use statue on pedestal' or 'use gem in socket' would make sense to turn into `put ${subject} on/in ${object}`)
-        this.textLog.submitMessage(
+        this.textLog.submitMessageString(
           `[PLACEHOLDER]: you use the ${response.subject} on the ${response.object}`,
         );
         break;
 
       case Action.give:
-        this.textLog.submitMessage(
+        this.textLog.submitMessageString(
           `[PLACEHOLDER]: you give the ${response.subject} to the ${response.object}`,
         );
         break;
 
       case Action.put:
         // narrow case of use
-        this.textLog.submitMessage(
+        this.textLog.submitMessageString(
           `[PLACEHOLDER]: you place the ${response.subject} on the ${response.object}`,
         );
         break;

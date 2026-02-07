@@ -1,5 +1,5 @@
 import { Temperature, MatterState, Weight, Color, Size } from './units';
-import { FailWithReason, Success } from '../common';
+import { FailWithReason, Success } from '../common/common';
 
 export class Attributes {
   weight = 1; // lbs
@@ -37,6 +37,7 @@ export class GameObject {
     if (!movable) return [false, reason];
     if (this.attributes.size > Size.medium) return [false, 'too large'];
     if (this.attributes.weight > Weight.light) return [false, 'too heavy'];
+    return Success;
   }
 
   get(newParent: GameObject): FailWithReason {

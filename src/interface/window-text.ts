@@ -1,6 +1,7 @@
 import { ASCIICanvas } from './ascii-canvas';
 import { WindowBase } from './window';
-import { TextDisplay } from '../common';
+import { TextDisplay } from '../common/common';
+import { richText, RichText, RichTextInstantiator } from '../text/richText';
 
 export enum FillDirection {
   topDown = 0,
@@ -9,34 +10,29 @@ export enum FillDirection {
 
 export class WindowText extends WindowBase implements TextDisplay {
   // TODO: with word wrap, this will be wrong
-  textHeight: number = 0;
   fillDirection: FillDirection = FillDirection.topDown;
   fillDelay: number = 5;
 
-  private _text: string = '';
-  private _fillText: string = '';
-  private _filling = false;
+  // TODO: instead use tuples of request/response (or an object with those and addl. data)
+  // maybe fillDelay should go in the message, so they can be variable speed (for suspense)
+  private messages: RichText[] = [];
+
+  private fillMessageIndex: number = 0;
+  private fillRowPosition: number = 0;
+  private filling = false;
 
   /**
    * directly set text rendered
    * ignores fillDelay
-   * @param text
+   * @param messages
    */
-  setText(text: string) {
+  setText(messages: RichText[]) {
     // TODO: word wrap
-    this._text = text;
-    this.textHeight = (text.match(/\n/g) || []).length;
-    this.changed = true;
+    for (let i = 0; i < messages.length; i++) {
+      messages[i].registerRedraw(this.requestRedraw);
+    }
+    this.messages = messages;
     this.requestRedraw();
-  }
-
-  /**
-   * appends text
-   * does not begin on a new line
-   * @param text
-   */
-  addText(text: string) {
-    this._typeText(text, this.fillDelay);
   }
 
   /**
@@ -44,46 +40,71 @@ export class WindowText extends WindowBase implements TextDisplay {
    * begins on a new line
    * @param text
    */
-  addLine(text: string) {
-    this.addText('\n' + text);
+  addMessage(text: RichTextInstantiator) {
+    this.typeMessage(text, this.fillDelay);
   }
 
-  submitMessage(message: string) {
+  // TODO: remove
+  submitMessageString(message: string) {
     // TODO: option to skip typing
-    this.addLine(message);
+    // TODO: make message be RichText
+    this.addMessage(richText(message));
   }
 
-  private _typeText(text: string, delay: number) {
-    if (delay == 0) {
-      this.setText(this._text + text);
+  private typeMessage(text: RichTextInstantiator, delay: number) {
+    const message = text(null);
+    if (!this.filling) {
+      // we don't want to set this if we're already in the middle of typing some older text
+      this.fillMessageIndex = this.messages.length;
+      this.fillRowPosition = 0;
+    }
+
+    this.setText(this.messages.concat([message]));
+
+    if (delay === 0) {
+      this.fillMessageIndex = this.messages.length;
+      this.fillRowPosition = message.length;
       return;
     }
+
     // TODO: check if this can be a race condition
-    this._fillText += text;
-    if (this._filling == true) {
+    // if we're already printing, let the existing interval keep going
+    if (this.filling == true) {
       return;
     }
-    this._filling = true;
+
+    this.filling = true;
     const intervalID = setInterval(() => {
       // TODO: parse markdown
-      let numChars = 1;
+      let incrementCharCount = 1;
       if (delay < 3) {
         // interval minimum is 4; special case for speeds faster than that
         // technically 3 should be 1.333..., (1, and then 2 every third interval); we're just ignoring that 'cuz 1 is close enough
-        numChars = 4 / delay;
+        incrementCharCount = 4 / delay;
       }
-      this.setText(this._text + this._fillText.substring(0, numChars));
-      // TODO maybe we should just move a pointer instead of constantly making substrings
-      this._fillText = this._fillText.substring(numChars);
-      if (this._fillText === '') {
-        clearInterval(intervalID);
-        this._filling = false;
+
+      const message = this.messages[this.fillMessageIndex];
+
+      this.fillRowPosition += incrementCharCount;
+      if (this.fillRowPosition >= message.length) {
+        this.fillMessageIndex++;
+        this.fillRowPosition = 0;
+
+        if (this.fillMessageIndex >= this.messages.length) {
+          this.fillRowPosition = message.length;
+          clearInterval(intervalID);
+          this.filling = false;
+        }
       }
+
       if (this.fillDelay !== delay) {
         clearInterval(intervalID);
-        this._filling = false;
-        this._typeText('', this.fillDelay);
+        this.filling = false;
+        // TODO: this is a gross hack to retrigger the interval with a new delay
+        this.typeMessage(richText(''), this.fillDelay);
       }
+
+      this.requestRedraw();
     }, delay);
   }
 
@@ -91,41 +112,24 @@ export class WindowText extends WindowBase implements TextDisplay {
     await this._canvas.clear();
     super._update();
 
-    const wrappedText = this.wrapText(this._text);
+    const rows: HTMLElement[][] = [];
+    for (let i = 0; i < this.messages.length || i < this.fillMessageIndex; i++) {
+      const message = this.messages[i];
+      const limit = i === this.fillMessageIndex ? this.fillRowPosition : undefined;
+      rows.push(...message.render(0, limit, this.interiorWidth));
+    }
 
     if (this.fillDirection === FillDirection.topDown) {
-      this._canvas.writeString(wrappedText.join('\n'), [this.indexLeft, this.indexTop]);
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        this._canvas.writeRichText([row], [this.indexLeft, this.indexTop + i]);
+      }
     } else {
-      this._canvas.writeString(wrappedText.join('\n'), [
-        this.indexLeft,
-        this.indexBottom - wrappedText.length,
-      ]);
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[rows.length - 1 - i];
+        this._canvas.writeRichText([row], [this.indexLeft, this.indexBottom - i]);
+      }
     }
     return this._canvas;
-  }
-
-  private wrapText(text: string): string[] {
-    return text.split('\n').flatMap((row) => {
-      let currentRow = row;
-      const rows: string[] = [];
-      while (currentRow.length > this.interiorWidth) {
-        // find the last space before the screen breaks
-        const breakIndex = currentRow.lastIndexOf(' ', this.interiorWidth);
-        console.log(breakIndex);
-        const newRow = (() => {
-          if (breakIndex === -1) {
-            // word was longer than the width of the screen, split it with a hyphen
-            return currentRow.substring(0, this.interiorWidth - 2) + '-';
-          }
-          return currentRow.substring(0, breakIndex);
-        })();
-        rows.push(newRow);
-        // indent wrapped rows
-        currentRow = '  ' + currentRow.substring(newRow.length + 1);
-      }
-      // add the remainder
-      rows.push(currentRow);
-      return rows;
-    });
   }
 }
