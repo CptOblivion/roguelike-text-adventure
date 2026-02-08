@@ -55,7 +55,11 @@ export enum EventType {
   mouseUp = 'mouseup',
 }
 
-export function newElem(content: string, css: string | null = null): HTMLElement {
+export function newElem(
+  content: string,
+  classes: string[] | null = null,
+  css: string | null = null,
+): HTMLElement {
   const elem = document.createElement('div');
   elem.textContent = content;
 
@@ -63,5 +67,23 @@ export function newElem(content: string, css: string | null = null): HTMLElement
     elem.style = css;
   }
 
+  if (classes != null) {
+    for (const c of classes) {
+      elem.classList.add(c);
+    }
+  }
+
   return elem;
+}
+
+export function diffDivs(a: HTMLElement, b: HTMLElement): boolean {
+  if (a.textContent !== b.textContent) return false;
+  if (a.style.cssText !== b.style.cssText) return false;
+  if (a.classList.length !== b.classList.length) return false;
+  for (const c of a.classList) {
+    if (!b.classList.contains(c)) {
+      return false;
+    }
+  }
+  return true;
 }

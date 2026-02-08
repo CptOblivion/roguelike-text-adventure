@@ -1,3 +1,9 @@
-export { RichTextColor, richTextBold, richTextColor, richTextHover } from './lib/richTextSections';
+export {
+  RichTextColor,
+  richTextBold,
+  richTextColor,
+  richTextHover,
+  richTextLink,
+} from './lib/richTextSections';
 
 export { RichText, richText, RichTextInstantiator } from './lib/richText';

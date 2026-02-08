@@ -66,9 +66,15 @@ export class RichText implements IRichText {
       return null;
     }
 
-    const styles = this.styles.map((section) => section.getStyles()).join(' ');
+    const styles = this.styles
+      .map((section) => section.getStyles())
+      .filter((e) => e != null)
+      .join(' ');
+
+    const classes = this.styles.flatMap((section) => section.getClasses()).filter((e) => e != null);
+
     if (!this.hasChildren()) {
-      const elem = newElem(this.rawText.charAt(index), styles);
+      const elem = newElem(this.rawText.charAt(index), classes, styles);
       for (const style of this.styles) {
         style.registerEvents(elem);
       }
@@ -79,16 +85,23 @@ export class RichText implements IRichText {
     let offset = 0;
     for (const child of this.children) {
       if (index < offset + child.length) {
-        const out = nullThrows(
+        const elem = nullThrows(
           child.renderAtIndex(index - offset),
           'rendering child within bounds',
         );
-        out.style = styles + out.style.cssText;
+
+        if (styles !== '') {
+          elem.style = styles + ' ' + elem.style.cssText;
+        }
+
+        for (const c of classes) {
+          elem.classList.add(c);
+        }
 
         for (const style of this.styles) {
-          style.registerEvents(out);
+          style.registerEvents(elem);
         }
-        return out;
+        return elem;
       }
       offset += child.length;
     }
@@ -167,7 +180,7 @@ function wrapText(text: HTMLElement[], lineLength: number | null): HTMLElement[]
       // word was longer than the width of the screen, split it with a hyphen
       const row = text.slice(0, lineLength - 1);
       // TODO: find a better solution than arbitrarily taking the style of the character to the left
-      row.push(newElem('-', row[row.length - 1].style.cssText));
+      row.push(newElem('-', null, row[row.length - 1].style.cssText));
       return [row, text.slice(row.length - 1)];
     })();
     text = remainder;

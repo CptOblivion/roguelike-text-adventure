@@ -1,5 +1,6 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
+import { diffDivs } from '../common/common';
 
 const ROW_STYLE = 'display: flex; flex-direction: row;';
 
@@ -67,8 +68,7 @@ export class WindowRoot extends WindowBase {
         const newChar = canvas[y][x];
         const oldChar = this.htmlGrid.children[y].children[x] as HTMLElement;
         if (
-          oldChar.textContent !== newChar.textContent ||
-          oldChar.style.cssText !== newChar.style.cssText
+          !diffDivs(oldChar, newChar)
           // TODO: diff event listners somehow, or just let the renderer declare a component as changed
         ) {
           this.htmlGrid.children[y].replaceChild(newChar, oldChar);

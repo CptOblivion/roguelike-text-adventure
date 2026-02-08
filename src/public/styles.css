@@ -22,7 +22,11 @@ body{
   white-space: pre-wrap;
 }
 
-.hovered {
-  color: green;
+.clickable {
+  color: #88f;
   cursor: pointer;
+}
+
+.clickable.hovered{
+    color: rgb(58, 101, 255);
 }
