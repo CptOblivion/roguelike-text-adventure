@@ -9,7 +9,13 @@ import { TitlePosition, WindowBase } from './interface/window';
 import { FillDirection, WindowText } from './interface/window-text';
 import { WindowTextinput } from './interface/window-textinput';
 import { GameManager } from './game/game-manager';
-import { richTextHover, RichTextColor, richTextColor, richText } from './text/richText';
+import {
+  richTextHover,
+  RichTextColor,
+  richTextColor,
+  richText,
+  richTextLink,
+} from './text/richText';
 
 function main() {
   const docMain = document.getElementById('main');
@@ -39,11 +45,11 @@ function buildWindow(el = document.body) {
       richText(
         'Your palms make a wet slap on the cold metal floor as you drop trembling from your bay, for the first time, again.\nYou are in a bare metal room save for the empty ',
       ),
-      richText('space suit', [richTextColor(RichTextColor.RED), richTextHover()]),
+      richText('space suit', [richTextLink()]),
       richText(' that silently stood watch, waiting, while you slept.\nOn the '),
-      richText('starboard wall', [richTextColor(RichTextColor.RED), richTextHover()]),
+      richText('starboard wall', [richTextLink()]),
       richText(' is a hatch with a '),
-      richText('lever', [richTextColor(RichTextColor.RED), richTextHover()]),
+      richText('lever', [richTextLink()]),
       richText(' beside it.\n\nYou have nothing.'),
     ]),
   );

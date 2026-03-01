@@ -50,16 +50,52 @@ class RichTextSectionHover extends RichTextSection {
     this.parent.redraw();
   }
 
-  public registerEvents(elem: HTMLElement): void {
+  protected registerHoverEvents(elem: HTMLElement): void {
     elem.addEventListener(EventType.MouseEnter, () => this.onMouseEnter());
     elem.addEventListener(EventType.MouseLeave, () => this.onMouseExit());
   }
 
-  public getStyles(): string {
-    return this.hovered ? `color: ${RichTextColor.GREEN}; cursor: pointer;` : '';
+  public registerEvents(elem: HTMLElement): void {
+    this.registerHoverEvents(elem);
+  }
+
+  protected getHoverClasses(): string[] {
+    if (!this.hovered) return [];
+    return ['hovered'];
+  }
+
+  public getClasses(): string[] {
+    return this.getHoverClasses();
   }
 }
 
 export function richTextHover(): RichTextSectionInstantiator {
   return (args: RichTextSectionInstantiatorArgs) => new RichTextSectionHover(args);
+}
+
+class RichTextSectionLink extends RichTextSectionHover {
+  private onClick(): void {
+    console.log('clicked!');
+  }
+
+  protected registerClickEvents(elem: HTMLElement): void {
+    elem.addEventListener(EventType.Click, () => this.onClick());
+  }
+
+  public registerEvents(elem: HTMLElement): void {
+    this.registerHoverEvents(elem);
+    this.registerClickEvents(elem);
+  }
+
+  protected getClickClasses(): string[] {
+    return ['clickable'];
+  }
+
+  public getClasses(): string[] {
+    return [...this.getClickClasses(), ...this.getHoverClasses()];
+  }
+}
+
+export function richTextLink(): RichTextSectionInstantiator {
+  return (args: RichTextSectionInstantiatorArgs) => new RichTextSectionLink(args);
 }

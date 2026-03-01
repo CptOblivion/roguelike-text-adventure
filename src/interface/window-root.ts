@@ -1,25 +1,29 @@
 import { WindowBase } from './window';
 import { ASCIICanvas } from './ascii-canvas';
+import { diffDivs } from '../common/common';
 
 const ROW_STYLE = 'display: flex; flex-direction: row;';
 
+const FRAMERATE = (1 / 30) * 1000;
+
 export class WindowRoot extends WindowBase {
-  private _el: HTMLElement;
-  private static _instance: WindowRoot;
-  private _drawing: boolean = false;
-  private _redraw_queued: boolean = false;
+  private el: HTMLElement;
+  private static instance: WindowRoot;
+  private drawing: boolean = false;
+  private redraw_queued: boolean = false;
+  private redrawCooldown: boolean = false;
 
   private htmlGrid: HTMLElement;
 
   constructor(el: HTMLElement) {
-    if (WindowRoot._instance !== undefined) {
+    if (WindowRoot.instance !== undefined) {
       throw 'attempted to create a new window root when one already exists!';
     }
     super('root');
-    WindowRoot._instance = this;
-    WindowBase.redraw = this._redrawRoot;
+    WindowRoot.instance = this;
+    WindowBase.redraw = this.queueRedrawRoot;
     this.htmlGrid = document.createElement('div');
-    this._el = el;
+    this.el = el;
     window.addEventListener('resize', this._onWindowResize.bind(this));
     this._onWindowResize();
   }
@@ -30,13 +34,13 @@ export class WindowRoot extends WindowBase {
 
   private _updateCanvasSize() {
     // I hate this
-    this._el.innerHTML = 'X';
-    const baseHeight = this._el.offsetHeight;
+    this.el.innerHTML = 'X';
+    const baseHeight = this.el.offsetHeight;
     // TODO: optimize (double character count until new height found, then binary search back?)
-    for (; this._el.offsetHeight === baseHeight; this._el.innerHTML += 'X') {}
-    const heightTwoChars = this._el.offsetHeight;
+    for (; this.el.offsetHeight === baseHeight; this.el.innerHTML += 'X') {}
+    const heightTwoChars = this.el.offsetHeight;
 
-    const width = this._el.innerHTML.length - 1;
+    const width = this.el.innerHTML.length - 1;
     const height = Math.floor(window.innerHeight / (heightTwoChars - baseHeight));
     this.resize(width, height);
     const children: Array<HTMLElement> = [];
@@ -52,7 +56,7 @@ export class WindowRoot extends WindowBase {
     }
 
     this.htmlGrid.replaceChildren(...children);
-    this._el.replaceChildren(this.htmlGrid);
+    this.el.replaceChildren(this.htmlGrid);
 
     this._update();
   }
@@ -67,8 +71,7 @@ export class WindowRoot extends WindowBase {
         const newChar = canvas[y][x];
         const oldChar = this.htmlGrid.children[y].children[x] as HTMLElement;
         if (
-          oldChar.textContent !== newChar.textContent ||
-          oldChar.style.cssText !== newChar.style.cssText
+          !diffDivs(oldChar, newChar)
           // TODO: diff event listners somehow, or just let the renderer declare a component as changed
         ) {
           this.htmlGrid.children[y].replaceChild(newChar, oldChar);
@@ -78,24 +81,37 @@ export class WindowRoot extends WindowBase {
     return this._canvas;
   }
 
-  _redrawRoot() {
+  queueRedrawRoot() {
     // TODO: actual redraw queue and batch, not... *gestures at this*
     // TODO: maybe while we're drawing to the screen, we should lock writes to canvases or something
-    const instance = WindowRoot._instance;
-    if (instance._drawing) {
-      instance._redraw_queued = true;
+    if (WindowRoot.instance.drawing || WindowRoot.instance.redrawCooldown) {
+      WindowRoot.instance.redraw_queued = true;
       return;
     }
-    instance._drawing = true;
-    instance._redraw_queued = false;
-    WindowRoot._instance._update().then(() => {
-      instance._drawing = false;
 
-      if (instance._redraw_queued) {
-        // currently if we consistently queue the next redraw before the last one finished, I think we'll run out of stack
-        // this could happen if e.g. we have some animation playing, consistently pushing out updates before the previous render is done
-        WindowRoot.redraw();
-      }
-    });
+    // timeout with no duration to allow additional blocking changes to complete before redraw triggers
+    // e.g. mouseenter after mouseleave should render on the same frame
+    setTimeout(WindowRoot.startRedrawRoot);
+  }
+
+  static queueRedrawNextFrame() {
+    WindowRoot.instance.redrawCooldown = false;
+    if (WindowRoot.instance.redraw_queued) {
+      WindowRoot.startRedrawRoot();
+    }
+  }
+
+  static startRedrawRoot() {
+    WindowRoot.instance.redrawCooldown = true;
+    // once render is started, let additional renders accumulate for the duration of a frame
+    setTimeout(WindowRoot.queueRedrawNextFrame, FRAMERATE);
+
+    WindowRoot.instance.drawing = true;
+    WindowRoot.instance.redraw_queued = false;
+    WindowRoot.instance._update().then(WindowRoot.finishRedrawRoot);
+  }
+
+  static finishRedrawRoot() {
+    WindowRoot.instance.drawing = false;
   }
 }

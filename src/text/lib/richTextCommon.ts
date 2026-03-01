@@ -17,7 +17,13 @@ export abstract class RichTextSection {
     this.parent = parent;
   }
 
-  public abstract getStyles(): string;
+  public getStyles(): string | null {
+    return null;
+  }
+
+  public getClasses(): string[] {
+    return [];
+  }
 
   public shifted(offset: number): RichTextSection {
     const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
