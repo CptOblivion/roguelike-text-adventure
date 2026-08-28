@@ -2,7 +2,7 @@ import { ASCIICanvas } from './ascii-canvas';
 import { PADDING_EVEN } from './borders';
 import { WindowBase } from './window';
 import { EventEmitter, ListenerSubmitText, EventText } from '../common/common';
-import { richText, RichText } from '../text/richText';
+import { richText, RichText } from '../text/richtext';
 
 const EVENT_SUBMIT_TEXT = 'submittext';
 

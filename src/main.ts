@@ -15,7 +15,7 @@ import {
   richTextColor,
   richText,
   richTextLink,
-} from './text/richText';
+} from './text/richtext';
 
 function main() {
   const docMain = document.getElementById('main');

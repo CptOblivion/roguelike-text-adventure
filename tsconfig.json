@@ -6,7 +6,7 @@
     "allowJs": true,
     "jsx": "react",
     "sourceMap": true,
-    // TODO: enable these, and fix
+    // TODO: enable these, update linter, and fix
     // "strict": true,
     // "noImplicitAny": true,
     "strictNullChecks": true,
