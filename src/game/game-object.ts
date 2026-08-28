@@ -12,7 +12,7 @@ export class Attributes {
 
 export class GameObject {
   type: string;
-  parent?: GameObject;
+  parent?: GameObject | undefined;
   attached = false;
   name: string;
   attributes = new Attributes();

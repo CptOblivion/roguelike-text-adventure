@@ -43,7 +43,7 @@ class Matcher {
 
 function goDirection({ direction }: { [key: string]: string }): ActionParsed {
   direction = direction.toLowerCase();
-  const shorthand = {
+  const shorthand: { [key: string]: string } = {
     n: 'north',
     s: 'south',
     e: 'east',

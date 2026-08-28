@@ -9,7 +9,7 @@ export type FailWithReason = [succes: boolean, reason: string | undefined];
 export const Success: FailWithReason = [true, undefined];
 
 export interface EventEmitter {
-  addEventListener(type: string, listener: EventListener);
+  addEventListener(type: string, listener: EventListener): void;
 }
 
 export type EventListener = (ev: any) => any;
