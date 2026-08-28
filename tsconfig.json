@@ -2,11 +2,19 @@
   "compilerOptions": {
     "module": "es6",
     "target": "es6",
-    "lib": ["es5", "es6", "dom"],
+    "lib": ["es6", "dom"],
     "allowJs": true,
     "jsx": "react",
     "sourceMap": true,
+    // TODO: enable these, and fix
+    // "strict": true,
+    // "noImplicitAny": true,
     "strictNullChecks": true,
+    // "strictPropertyInitialization": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
   },
   "files":["src/main.ts"],
 }
