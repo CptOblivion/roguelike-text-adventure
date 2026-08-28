@@ -33,7 +33,7 @@ export class WindowBase {
   width: number = 0;
   height: number = 0;
   padding: Sides = new Sides();
-  borders: Borders;
+  borders?: Borders;
 
   sizeMin?: number;
   sizeMax?: number;
@@ -128,7 +128,7 @@ export class WindowBase {
     if (!this.borders) {
       return;
     }
-    let titleOffset;
+    let titleOffset = 0;
     if (this.title) {
       switch (this.titlePosition) {
         case TitlePosition.left:

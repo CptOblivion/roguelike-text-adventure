@@ -1,20 +1,20 @@
 {
   "compilerOptions": {
-    "module": "es6",
-    "target": "es6",
-    "lib": ["es6", "dom"],
+    "module": "es2020",
+    "target": "es2020",
+    "lib": ["es2020", "dom", "DOM.Iterable"],
     "allowJs": true,
     "jsx": "react",
     "sourceMap": true,
-    // TODO: enable these, update linter, and fix
-    // "strict": true,
-    // "noImplicitAny": true,
+    "strict": true,
+    "noImplicitAny": true,
     "strictNullChecks": true,
-    // "strictPropertyInitialization": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "exactOptionalPropertyTypes": true,
+    "strictPropertyInitialization": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
   },
   "files":["src/main.ts"],
 }

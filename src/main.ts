@@ -4,18 +4,12 @@ require('file-loader?name=[name].[ext]!./public/styles.css');
 require('file-loader?name=[name].[ext]!./public/favicon.png');
 
 import { WindowRoot } from './interface/window-root';
-import { Borders, BORDER_DOUBLE, BORDER_INVISIBLE_TOP, PADDING_EVEN } from './interface/borders';
+import { Borders, BORDER_DOUBLE, PADDING_EVEN } from './interface/borders';
 import { TitlePosition, WindowBase } from './interface/window';
 import { FillDirection, WindowText } from './interface/window-text';
 import { WindowTextinput } from './interface/window-textinput';
 import { GameManager } from './game/game-manager';
-import {
-  richTextHover,
-  RichTextColor,
-  richTextColor,
-  richText,
-  richTextLink,
-} from './text/richtext';
+import { richText, richTextLink } from './text/richtext';
 
 function main() {
   const docMain = document.getElementById('main');

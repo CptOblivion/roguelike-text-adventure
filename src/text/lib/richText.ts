@@ -19,11 +19,15 @@ export class RichText implements IRichText {
   private redrawContainer: (() => void) | null = null;
 
   private hasChildren(): boolean {
-    return this.children != null && this.children.length !== 0;
+    const hasChildren = this.children != null && this.children.length !== 0;
+    return hasChildren;
   }
 
   public get length(): number {
-    return this.rawText.length;
+    if (!this.hasChildren()) {
+      return this.rawText.length;
+    }
+    return this.children.reduce((prev, child) => child.length + prev, 0);
   }
 
   public constructor(
@@ -37,6 +41,7 @@ export class RichText implements IRichText {
     if (typeof content === 'string') {
       this.rawText = content;
     } else {
+      this.rawText = '';
       this.children = (content as RichTextInstantiator[]).map((instantiator) => instantiator(this));
       this.update();
     }
