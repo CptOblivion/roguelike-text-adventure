@@ -7,7 +7,7 @@ import { Player } from './player';
  * go-between for parser, world state, text input and output, displays, etc
  */
 export class GameManager {
-  textLog: TextDisplay;
+  textLog?: TextDisplay;
 
   parser: Parser = new Parser();
   worldState: WorldStateManager = new WorldStateManager();

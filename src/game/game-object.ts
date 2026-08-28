@@ -6,16 +6,22 @@ export class Attributes {
   size = Size.medium;
   temperature: Temperature = Temperature.normal;
   state: MatterState = MatterState.solid;
-  color: Color;
-  other: {};
+  color: Color = Color.clear;
+  other: {} = {};
 }
 
 export class GameObject {
+  // TODO: make an enum or something
   type: string;
   parent?: GameObject | undefined;
   attached = false;
   name: string;
   attributes = new Attributes();
+
+  constructor(type: string, name: string) {
+    this.type = type;
+    this.name = name;
+  }
 
   setParent(parent?: GameObject) {
     this.parent = parent;

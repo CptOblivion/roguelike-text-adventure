@@ -32,5 +32,5 @@ export abstract class RichTextSection {
     return copy;
   }
 
-  // public registerEvents(elem: HTMLElement): void {}
+  public registerEvents(_elem: HTMLElement): void {}
 }

@@ -2,7 +2,7 @@ import { ASCIICanvas } from './ascii-canvas';
 import { PADDING_EVEN } from './borders';
 import { WindowBase } from './window';
 import { EventEmitter, ListenerSubmitText, EventText } from '../common/common';
-import { richText, RichText } from '../text/richtext';
+import { richText } from '../text/richtext';
 
 const EVENT_SUBMIT_TEXT = 'submittext';
 
@@ -17,7 +17,7 @@ export class WindowTextinput extends WindowBase implements EventEmitter {
   sizeWeight = 0;
 
   private _text: string = '';
-  private _capturing: boolean = false;
+  // private _capturing: boolean = false;
   private static _instance: WindowTextinput;
 
   private _eventListeners: { [key: string]: Set<any> } = {
@@ -31,7 +31,7 @@ export class WindowTextinput extends WindowBase implements EventEmitter {
     super('text_input');
     WindowTextinput._instance = this;
     document.addEventListener('keydown', this._handleKeyInput.bind(this));
-    this._capturing = true;
+    // this._capturing = true;
   }
 
   // TODO I'm sure TS has a means to create a generic addEventListener for all types in EventListenerMap

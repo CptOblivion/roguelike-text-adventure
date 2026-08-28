@@ -12,4 +12,10 @@ export class Room extends Container {
   exits: Exits = new Exits();
   briefFirst: string;
   briefReturn: string;
+
+  constructor(name: string, briefFirst: string, briefReturn: string) {
+    super(name, 'room');
+    this.briefFirst = briefFirst;
+    this.briefReturn = briefReturn;
+  }
 }

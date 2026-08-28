@@ -2,7 +2,7 @@ import { GameObject } from './game-object';
 import { FailWithReason, Success } from '../common/common';
 
 export class Character extends GameObject {
-  inventory: Set<GameObject>;
+  inventory: Set<GameObject> = new Set();
 
   get(object: GameObject): FailWithReason {
     const [canGet, reason] = object.canGet();

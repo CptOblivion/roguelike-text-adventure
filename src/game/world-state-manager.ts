@@ -5,6 +5,6 @@ export class WorldStateManager {
 
   constructor() {
     // placeholder room fill
-    this.map.push(new Room());
+    this.map.push(new Room('placeholder room', 'you enter the room', 'you re-enter the room'));
   }
 }
