@@ -4,6 +4,10 @@ require('file-loader?name=[name].[ext]!./public/styles.css');
 require('file-loader?name=[name].[ext]!./public/favicon.png');
 require('file-loader?name=[name].[ext]!./public/flower.png');
 
+// don't allow deltaT to get larger than 50ms
+// mainly to avoid big logic jumps when returning to a tab that was suspended in the background
+const MAX_FRAME_TIME = (1 / 20) * 1000;
+
 function main() {
   const docMain = document.getElementById('main');
   if (docMain == null) {
@@ -21,9 +25,9 @@ function buildWindow(el = document.body) {
 class WindowRoot {
   private canvas: HTMLCanvasElement;
   private static instance: WindowRoot;
-  private tickRate: number = (1 / 120) * 1000;
   private lastFrametime: number;
   private scale: number = 2;
+  private context: CanvasRenderingContext2D;
 
   private path: Path;
 
@@ -36,11 +40,18 @@ class WindowRoot {
     }
     el.textContent = '';
     WindowRoot.instance = this;
+
     this.canvas = document.createElement('canvas');
+
+    const context = this.canvas.getContext('2d', { alpha: false });
+    if (context == null) {
+      throw 'unable to create canvas context';
+    }
+    this.context = context;
+
     el.appendChild(this.canvas);
     this.canvas.width = 400;
     this.canvas.height = 400;
-
     this.canvas.style = `
     width: 1024px;
     height: 1024px;
@@ -51,17 +62,17 @@ class WindowRoot {
     this.bees = [new Bee(this.path)];
     this.flowers = [new Flower(new Vector2(30, 30), 8), new Flower(new Vector2(-30, 30), 8)];
 
-    this.lastFrametime = Date.now();
-    this.update();
+    this.lastFrametime = performance.now();
+
+    requestAnimationFrame(this.update.bind(this));
   }
 
   static getCurrent(): WindowRoot {
     return WindowRoot.instance;
   }
 
-  private async update(): Promise<void> {
-    const frameTime = Date.now();
-    const deltaTMS = frameTime - this.lastFrametime;
+  private async update(frameTime: number): Promise<void> {
+    const deltaTMS = Math.min(frameTime - this.lastFrametime, MAX_FRAME_TIME);
     this.lastFrametime = frameTime;
 
     const deltaT = deltaTMS / 1000;
@@ -74,20 +85,17 @@ class WindowRoot {
       flower.update(deltaT);
     }
 
-    const context = this.canvas.getContext('2d');
-    if (context != null) {
-      context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      for (const flower of this.flowers) {
-        flower.draw(context, this.canvas, this.scale);
-      }
-
-      for (const bee of this.bees) {
-        bee.draw(context, this.canvas, this.scale);
-      }
+    this.context.fillStyle = 'lightGreen';
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    for (const flower of this.flowers) {
+      flower.draw(this.context, this.canvas, this.scale);
     }
 
-    const remainder = Date.now() - frameTime;
-    setTimeout(this.update.bind(this), Math.max(this.tickRate - remainder, 0));
+    for (const bee of this.bees) {
+      bee.draw(this.context, this.canvas, this.scale);
+    }
+
+    requestAnimationFrame(this.update.bind(this));
   }
 }
 
