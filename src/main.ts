@@ -2,7 +2,7 @@
 require('file-loader?name=[name].[ext]!./public/index.html');
 require('file-loader?name=[name].[ext]!./public/styles.css');
 require('file-loader?name=[name].[ext]!./public/favicon.png');
-require('file-loader?name=[name].[ext]!./public/flower.png');
+require('file-loader?name=[name].[ext]!./public/flowers.png');
 
 function main() {
   const docMain = document.getElementById('main');
@@ -20,6 +20,7 @@ function buildWindow(el = document.body) {
 
 class WindowRoot {
   private canvas: HTMLCanvasElement;
+  private context: CanvasRenderingContext2D;
   private static instance: WindowRoot;
   private tickRate: number = (1 / 120) * 1000;
   private lastFrametime: number;
@@ -40,6 +41,12 @@ class WindowRoot {
     el.appendChild(this.canvas);
     this.canvas.width = 400;
     this.canvas.height = 400;
+    const context = this.canvas.getContext('2d');
+    if (context == null) {
+      throw 'unable to create canvas!';
+    }
+    this.context = context;
+    this.context.imageSmoothingEnabled = false;
 
     this.canvas.style = `
     width: 1024px;
@@ -73,16 +80,15 @@ class WindowRoot {
     for (const flower of this.flowers) {
       flower.update(deltaT);
     }
-
-    const context = this.canvas.getContext('2d');
-    if (context != null) {
-      context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (this.context != null) {
+      this.context.fillStyle = 'lightGreen';
+      this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
       for (const flower of this.flowers) {
-        flower.draw(context, this.canvas, this.scale);
+        flower.draw(this.context, this.canvas, this.scale);
       }
 
       for (const bee of this.bees) {
-        bee.draw(context, this.canvas, this.scale);
+        bee.draw(this.context, this.canvas, this.scale);
       }
     }
 
@@ -205,7 +211,7 @@ class Flower extends GameObject {
     this.position = position;
     this.radius = radius;
     this.sprite = new Image();
-    this.sprite.src = 'http://localhost:3000/flower.png';
+    this.sprite.src = 'http://localhost:3000/flowers.png';
   }
 
   update(_deltaT: number): void {
@@ -224,7 +230,6 @@ class Flower extends GameObject {
 
   drawImpl(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, scale: number) {
     const pos = this.getTransformedPosition(canvas, scale);
-    const spriteDim = new Vector2(this.sprite.width * scale, this.sprite.height * scale);
     if (this.isColliding) {
       context.fillStyle = 'green';
       context.beginPath();
@@ -233,12 +238,24 @@ class Flower extends GameObject {
       context.closePath();
     }
 
+    const spriteCountX = 4;
+    const spriteCountY = 3;
+    const spriteIDX = 3;
+    const spriteIDY = 2;
+
+    const spriteWidth = Math.floor(this.sprite.width / spriteCountX);
+    const spriteHeight = Math.floor(this.sprite.height / spriteCountY);
+
     context.drawImage(
       this.sprite,
-      pos.x - spriteDim.x / 2 - 1,
-      pos.y - spriteDim.y / 2 + 1,
-      spriteDim.x,
-      spriteDim.y,
+      spriteWidth * spriteIDX,
+      spriteHeight * spriteIDY,
+      spriteWidth,
+      spriteHeight,
+      pos.x - (spriteWidth * scale) / 2,
+      pos.y - (spriteHeight * scale) / 2,
+      spriteWidth * scale,
+      spriteHeight * scale,
     );
   }
 }
